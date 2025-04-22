@@ -15,7 +15,7 @@ const Navbar = () => {
           {/* Logo */}
           <Box sx={{ width: "33%", textAlign: "center" }}>
             <Typography variant="h5" sx={{ fontWeight: "bold", color: "black", fontFamily: "serif" }}>
-              FitouPneu
+              FitouPneus
             </Typography>
           </Box>
 
