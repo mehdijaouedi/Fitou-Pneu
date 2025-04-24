@@ -6,9 +6,16 @@ const mixt = defineType({
   type: 'document',
   fields: [
     { name: 'dateAdded', title: 'Date Added', type: 'datetime' },
-    { name: 'client', title: 'Client', type: 'reference', to: [{ type: 'client' }] },
-    { name: 'fournisseur', title: 'Fournisseur', type: 'reference', to: [{ type: 'fournisseur' }] },
+    { name: 'name', title: 'mixt Name', type: 'string' },
+    { name: 'description', title: 'Description', type: 'text' },
+    { name: 'price', title: 'Price', type: 'number' },
     { name: 'quantity', title: 'Quantity', type: 'number' },
+    {
+      name: 'images',
+      type: 'array',
+      title: 'Images',
+      of: [{ type: 'reference', to: [{ type: 'media' }] }],
+    },
   ],
 });
 
