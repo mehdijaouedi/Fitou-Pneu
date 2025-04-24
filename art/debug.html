@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sanity API Debug</title>
+  <script>
+    // Simple function to test Sanity API connection
+    async function testConnection() {
+      const projectId = 'rsg8mxls';
+      const dataset = 'production';
+      const apiVersion = '2023-01-01';
+      
+      const url = `https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}?query=*[_type=="pneu"][0...1]`;
+      
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+        document.getElementById('status').textContent = 'Connection successful';
+        document.getElementById('status').style.color = 'green';
+      } catch (error) {
+        document.getElementById('result').textContent = error.toString();
+        document.getElementById('status').textContent = 'Connection failed';
+        document.getElementById('status').style.color = 'red';
+      }
+    }
+  </script>
+</head>
+<body>
+  <h1>Sanity API Debug</h1>
+  <button onclick="testConnection()">Test Connection</button>
+  <div>
+    <h2 id="status">Click the button to test</h2>
+    <pre id="result" style="background: #f5f5f5; padding: 10px; max-width: 800px; overflow: auto;"></pre>
+  </div>
+</body>
+</html> 
