@@ -5,6 +5,7 @@ const jente = defineType({
   title: 'jente',
   type: 'document',
   fields: [
+    { name: 'dateAdded', title: 'Date Added', type: 'datetime' },
     { name: 'name', title: 'jente Name', type: 'string' },
     { name: 'description', title: 'Description', type: 'text' },
     { name: 'price', title: 'Price', type: 'number' },
