@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Grid,
@@ -7,21 +7,74 @@ import {
   Typography,
   TextField,
 } from "@mui/material";
+import { useParams } from "react-router-dom";
+import PneuCard from "./PneuCard";
+import sanityClient from "../../sanity/client";
+import { selctCategory } from "../../utils/myUtils";
 
 const HomeSection = () => {
+  const { productCategory } = useParams();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await sanityClient.fetch(`
+          *[_type == "${selctCategory(productCategory)}"]{
+            _id,
+            name,
+            price,
+            description,
+            dateAdded,
+            quantity,
+            images[]->{ 
+              _id,
+              path,
+              dbId,
+              url
+            }
+          }
+        `);
+        setProducts(data);
+        console.log('this is the data', data);
+        setFilteredProducts(data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+
+    fetchProducts();
+  }, [productCategory]);
+
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setFilteredProducts(products);
+    } else {
+      const lowercasedSearchTerm = searchTerm.toLowerCase();
+      const filtered = products.filter((product) =>
+        product.name.toLowerCase().includes(lowercasedSearchTerm)
+      );
+      setFilteredProducts(filtered);
+    }
+  }, [searchTerm, products]);
+
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
   return (
     <Box sx={{ px: 4, py: 4 }}>
-      {/* Content: Left offers + Right filter */}
       <Grid container spacing={4}>
-        {/* Offers Card (Left Side) */}
         <Grid item xs={12} md={9}>
           <Card
             sx={{
               height: 220,
               display: "flex",
-              justifyContent: "left",
-              alignItems: "left",
-              borderRadius:4
+              alignItems: "center",
+              borderRadius: 4,
+              paddingLeft: 4,
             }}
           >
             <CardContent>
@@ -35,80 +88,32 @@ const HomeSection = () => {
           </Card>
         </Grid>
 
-        {/* Search Filter (Right Side) */}
         <Grid item xs={12} md={3}>
-          <TextField label="Search" variant="outlined" fullWidth />
+          <TextField
+            label="Search products"
+            variant="outlined"
+            fullWidth
+            value={searchTerm}
+            onChange={handleSearchChange}
+          />
         </Grid>
       </Grid>
 
-      {/* Spacing between rows */}
-      <Box sx={{ mt: 4  , ml:20}}>
-  <Grid container spacing={4} justifyContent="left">
-    {[1, 2, 3].map((_, index) => (
-      <Grid item key={index}>
-        <Card
-          sx={{
-            width: 220,
-            height: 190,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 2,
-            borderRadius:4,
-
-          }}
-        >
-          <img
-            src="https://cdn-img1.pneus-online.com/produit/pneu-auto/250/OVATION_W586.jpg"
-            alt="Product"
-            style={{ width: 103, height: 100, objectFit: "cover", marginBottom: 8 }}
-          />
-          <Typography variant="subtitle1" fontWeight="bold">
-            Product Name
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            $99.99
-          </Typography>
-        </Card>
-      </Grid>
-    ))}
-  </Grid>
-</Box>
-
-<Box sx={{ mt: 4 , ml:20}}>
-  <Grid container spacing={4} justifyContent="left">
-    {[1, 2, 3].map((_, index) => (
-      <Grid item key={index}>
-        <Card
-          sx={{
-            width: 220,
-            height: 190,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 2,
-            borderRadius:4,
-          }}
-        >
-          <img
-            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRn62_D7thR_YVozSlTQqKC_PbXse6DFW3NKw&s"
-            alt="Product"
-            style={{ width: 103, height: 100, objectFit: "cover", marginBottom: 8 }}
-          />
-          <Typography variant="subtitle1" fontWeight="bold">
-            Product Name
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            $99.99
-          </Typography>
-        </Card>
-      </Grid>
-    ))}
-  </Grid>
-</Box>
-
+      <Box sx={{ mt: 4 }}>
+        <Grid container spacing={4} justifyContent="center">
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((product) => (
+              <Grid item key={product._id}>
+                <PneuCard data={product} />
+              </Grid>
+            ))
+          ) : (
+            <Typography variant="h6" sx={{ mt: 4 }}>
+              No products found.
+            </Typography>
+          )}
+        </Grid>
+      </Box>
     </Box>
   );
 };

@@ -37,6 +37,7 @@ const Navbar = () => {
   <Stack direction="row" justifyContent="center" spacing={6}>
     <Button
       variant="outlined"
+      onClick={() => window.location.href = "/pneus"}
       sx={{
         color: "black",
         borderColor: "black",
@@ -51,6 +52,7 @@ const Navbar = () => {
     </Button>
     <Button
       variant="outlined"
+      onClick={() => window.location.href = "/jantes"}
       sx={{
         color: "black",
         borderColor: "black",
@@ -65,6 +67,7 @@ const Navbar = () => {
     </Button>
     <Button
       variant="outlined"
+      onClick={() => window.location.href = "/"}
       sx={{
         color: "black",
         borderColor: "black",

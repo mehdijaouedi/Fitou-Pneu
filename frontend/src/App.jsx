@@ -9,7 +9,7 @@ function App() {
     <Router>
       <Navbar />
       <Routes>
-      <Route path="/" element={<HomeSection />} />
+      <Route path="/:productCategory?" element={<HomeSection />} />
 
 
 
