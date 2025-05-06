@@ -6,6 +6,8 @@ import {
   CardContent,
   Typography,
   TextField,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import { useParams } from "react-router-dom";
 import PneuCard from "./PneuCard";
@@ -15,6 +17,8 @@ import { selctCategory } from "../../utils/myUtils";
 const HomeSection = () => {
   const { productCategory } = useParams();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedType, setSelectedType] = useState([]);
+  const [selectedSeason, setSelectedSeason] = useState([]);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
 
@@ -29,6 +33,8 @@ const HomeSection = () => {
             description,
             dateAdded,
             quantity,
+            type,
+            season,
             images[]->{ 
               _id,
               path,
@@ -38,7 +44,7 @@ const HomeSection = () => {
           }
         `);
         setProducts(data);
-        console.log('this is the data', data);
+        console.log("Fetched products: ", data);
         setFilteredProducts(data);
       } catch (error) {
         console.error("Error fetching products:", error);
@@ -49,19 +55,53 @@ const HomeSection = () => {
   }, [productCategory]);
 
   useEffect(() => {
-    if (searchTerm.trim() === "") {
-      setFilteredProducts(products);
-    } else {
+    let filtered = products;
+
+    // Filter by search term
+    if (searchTerm.trim() !== "") {
       const lowercasedSearchTerm = searchTerm.toLowerCase();
-      const filtered = products.filter((product) =>
+      filtered = filtered.filter((product) =>
         product.name.toLowerCase().includes(lowercasedSearchTerm)
       );
-      setFilteredProducts(filtered);
     }
-  }, [searchTerm, products]);
+
+    // Filter by type
+    if (selectedType.length > 0) {
+      filtered = filtered.filter((product) =>
+        selectedType.includes(product.type)
+      );
+    }
+
+    // Filter by season
+    if (selectedSeason.length > 0) {
+      filtered = filtered.filter((product) =>
+        selectedSeason.includes(product.season)
+      );
+    }
+
+    setFilteredProducts(filtered);
+  }, [searchTerm, selectedType, selectedSeason, products]);
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
+  };
+
+  const handleTypeChange = (event) => {
+    const { value } = event.target;
+    setSelectedType((prevState) =>
+      prevState.includes(value)
+        ? prevState.filter((type) => type !== value)
+        : [...prevState, value]
+    );
+  };
+
+  const handleSeasonChange = (event) => {
+    const { value } = event.target;
+    setSelectedSeason((prevState) =>
+      prevState.includes(value)
+        ? prevState.filter((season) => season !== value)
+        : [...prevState, value]
+    );
   };
 
   return (
@@ -88,17 +128,63 @@ const HomeSection = () => {
           </Card>
         </Grid>
 
+        {/* Search and Filters in a vertical layout */}
         <Grid item xs={12} md={3}>
-          <TextField
-            label="Search products"
-            variant="outlined"
-            fullWidth
-            value={searchTerm}
-            onChange={handleSearchChange}
-          />
+          <Grid container spacing={3}>
+            {/* Search Bar */}
+            <Grid item xs={12}>
+              <TextField
+                label="Search products"
+                variant="outlined"
+                fullWidth
+                value={searchTerm}
+                onChange={handleSearchChange}
+              />
+            </Grid>
+
+            {/* Filters */}
+            <Grid item xs={12}>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 ,color: "black"}}>
+           
+
+                {/* Season Filters */}
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      value="summer"
+                      checked={selectedSeason.includes("summer")}
+                      onChange={handleSeasonChange}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "black", // Checkbox color when checked
+                        },
+                      }}
+                    />
+                  }
+                  label="summer"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      value="winter"
+                      checked={selectedSeason.includes("winter")}
+                      onChange={handleSeasonChange}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "black", // Checkbox color when checked
+                        },
+                      }}
+                    />
+                  }
+                  label="winter"
+                />
+              </Box>
+            </Grid>
+          </Grid>
         </Grid>
       </Grid>
 
+      {/* Product List */}
       <Box sx={{ mt: 4 }}>
         <Grid container spacing={4} justifyContent="center">
           {filteredProducts.length > 0 ? (
