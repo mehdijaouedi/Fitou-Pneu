@@ -1,28 +1,42 @@
-import { Card, Typography, Box } from "@mui/material";
-import React from "react";
+import { Card, Typography, Box, IconButton, Tooltip, Stack } from "@mui/material";
+import React, { useState } from "react";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 
 function PneuCard({ data }) {
-  const productImage = data?.images?.[0].path ? data.images[0].path : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjmvwItjeJ4l4wDoieU_TTjdoYuhTr5FBpJA&s";
+  const [showMessage, setShowMessage] = useState(false);
+
+  const handleAddToCart = () => {
+    console.log("Added to cart:", data.name);
+    setShowMessage(true);
+    setTimeout(() => setShowMessage(false), 1500); // hide after 1.5s
+  };
+
+  const productImage = data?.images?.[0]?.path
+    ? data.images[0].path
+    : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjmvwItjeJ4l4wDoieU_TTjdoYuhTr5FBpJA&s";
 
   return (
     <Card
       sx={{
-        width: 240,
-        height: 300,
+        width: 260,
+        height: 380,
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "flex-start",
+        justifyContent: "space-between",
         padding: 2,
         borderRadius: 4,
-        boxShadow: 3,
+        boxShadow: 4,
+        backgroundColor: "#fff",
       }}
     >
+      {/* Image */}
       <Box
         sx={{
           width: "100%",
-          paddingTop: "75%", // 4:3 aspect ratio
+          paddingTop: "70%",
           position: "relative",
+          borderRadius: 2,
+          overflow: "hidden",
           mb: 2,
         }}
       >
@@ -36,31 +50,50 @@ function PneuCard({ data }) {
             width: "100%",
             height: "100%",
             objectFit: "cover",
-            borderRadius: 8,
           }}
         />
       </Box>
 
-      <Typography variant="subtitle1" fontWeight="bold" textAlign="center" noWrap>
-        {data.name}
-      </Typography>
+      {/* Product Info */}
+      <Box sx={{ textAlign: "center", px: 1 }}>
+        <Typography variant="h6" fontWeight={600} noWrap gutterBottom>
+          {data.name}
+        </Typography>
 
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        textAlign="center"
-        sx={{ mt: 1, overflow: "hidden", textOverflow: "ellipsis", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}
-      >
-        {data.description}
-      </Typography>
-         {/* Uncomment if you want to show the date added */}
-      {/* <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontSize: "0.75rem" }}>
-        {new Date(data.dateAdded).toLocaleDateString()}
-      </Typography> */}
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            minHeight: "3em",
+          }}
+        >
+          {data.description}
+        </Typography>
+      </Box>
 
-      <Typography variant="h6" fontWeight="bold" sx={{ mt: 1 }}>
-        {data.price} €
-      </Typography>
+      {/* Price + Cart + Message */}
+      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 2, px: 1 }}>
+        <Typography variant="h6" fontWeight="bold" color="primary">
+          {data.price} €
+        </Typography>
+
+        {showMessage && (
+          <Typography variant="body2" color="success.main" sx={{ fontSize: "0.75rem", mx: 1 }}>
+            Added successfully
+          </Typography>
+        )}
+
+        <Tooltip title="Add to cart">
+          <IconButton color="primary" onClick={handleAddToCart}>
+            <ShoppingCartIcon />
+          </IconButton>
+        </Tooltip>
+      </Stack>
     </Card>
   );
 }
