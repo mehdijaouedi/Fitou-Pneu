@@ -5,6 +5,7 @@ import Navbar from './components/navbar';
 import HomeSection from './components/home'
 import Footer from './components/footer';
 import CartPage from './components/CartPage'; // adjust path if needed
+import ProductDetails from './components/ProductDetails';
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
       <Navbar />
       <Routes>
       <Route path="/:productCategory?" element={<HomeSection />} />
+      <Route path="/:productCategory?/details/:productId" element={<ProductDetails />} />
       <Route path="/cart" element={<CartPage />} />
 
 

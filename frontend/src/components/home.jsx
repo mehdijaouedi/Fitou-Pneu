@@ -9,12 +9,13 @@ import {
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import PneuCard from "./PneuCard";
 import sanityClient from "../../sanity/client";
 import { selctCategory } from "../../utils/myUtils";
 
 const HomeSection = () => {
+  const navigate = useNavigate();
   const { productCategory } = useParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState([]);
@@ -104,6 +105,10 @@ const HomeSection = () => {
     );
   };
 
+  const handleProductClick = (productId) => {
+    navigate(`/${productCategory}/details/${productId}`);
+  };
+
   return (
     <Box sx={{ px: 4, py: 4 }}>
       <Grid container spacing={4}>
@@ -189,7 +194,12 @@ const HomeSection = () => {
         <Grid container spacing={4} justifyContent="center">
           {filteredProducts.length > 0 ? (
             filteredProducts.map((product) => (
-              <Grid item key={product._id}>
+              <Grid
+                item
+                key={product._id}
+                onClick={() => handleProductClick(product._id)}
+                sx={{ cursor: "pointer" }}
+              >
                 <PneuCard data={product} />
               </Grid>
             ))
