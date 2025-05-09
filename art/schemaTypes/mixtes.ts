@@ -10,6 +10,14 @@ const mixt = defineType({
     { name: 'description', title: 'Description', type: 'text' },
     { name: 'price', title: 'Price', type: 'number' },
     { name: 'quantity', title: 'Quantity', type: 'number' },
+    { name: 'reference', title: 'Reference', type: 'string' },
+
+    {
+      name: 'fournisseur',
+      title: 'Fournisseur',
+      type: 'reference',
+      to: [{ type: 'fournisseur' }], 
+    },
     {
       name: 'images',
       type: 'array',
