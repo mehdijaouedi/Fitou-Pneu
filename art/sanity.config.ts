@@ -4,6 +4,7 @@ import { dashboardTool } from '@sanity/dashboard' // ✅ Import the real plugin
 import { schemaTypes } from './schemaTypes'
 import ProductStatsWidget from '../art/Widget/ProductStatsWidget'
 import InventorySalesWidget from '../art/Widget/InventorySalesWidget'
+
 // ...
 
 
@@ -28,6 +29,7 @@ export default defineConfig({
         },
       ],
     }),
+
   ],
 
   schema: {
