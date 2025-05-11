@@ -21,6 +21,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'; // 
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'; // Optional: for stock chip
 import { selctCategory } from '../../utils/myUtils';
 import sanityClient from '../../sanity/client'; // Import sanityClient
+import { useAuth } from '../context/AuthContext'; // Added
 
 const FALLBACK_IMAGE_URL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjmvwItjeJ4l4wDoieU_TTjdoYuhTr5FBpJA&s";
 
@@ -30,12 +31,20 @@ function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showMessage, setShowMessage] = useState(false);
+  const { isAuthenticated, openLoginModal } = useAuth(); // Added
 
   const handleAddToCart = () => {
-    console.log("Added to cart:", product.name); // Corrected: use product.name
-    setShowMessage(true);
-    setTimeout(() => setShowMessage(false), 1500); // hide after 1.5s
+    if (!isAuthenticated) {
+      openLoginModal();
+    } else {
+      // Proceed with adding to cart logic
+      // This is where you'd typically dispatch an action to your cart context/store
+      console.log("User is authenticated. Adding to cart:", product.name);
+      setShowMessage(true);
+      setTimeout(() => setShowMessage(false), 1500); // hide after 1.5s
+    }
   };
+
   useEffect(() => {
     const fetchProductDetails = async () => {
       // Ensure we only set loading and clear error if component is still mounted
@@ -168,7 +177,7 @@ function ProductDetails() {
               </Box>
 
               {/* Add to Cart Section */}
-              <Box sx={{ mt: 'auto', pt: 'auto' }}> {/* mt: 'auto' pushes this to the bottom */}
+              <Box sx={{ mt: 'auto', pt: 'auto', mb:5 }}> {/* mt: 'auto' pushes this to the bottom */}
                 <Button
                   variant="contained"
                   color="primary"

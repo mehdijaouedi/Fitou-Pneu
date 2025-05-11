@@ -15,7 +15,6 @@ import sanityClient from "../../sanity/client";
 import { selctCategory } from "../../utils/myUtils";
 
 const HomeSection = () => {
-  const navigate = useNavigate();
   const { productCategory } = useParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState([]);
@@ -105,9 +104,7 @@ const HomeSection = () => {
     );
   };
 
-  const handleProductClick = (productId) => {
-    navigate(`/${productCategory}/details/${productId}`);
-  };
+
 
   return (
     <Box sx={{ px: 4, py: 4 }}>
@@ -197,10 +194,9 @@ const HomeSection = () => {
               <Grid
                 item
                 key={product._id}
-                onClick={() => handleProductClick(product._id)}
                 sx={{ cursor: "pointer" }}
               >
-                <PneuCard data={product} />
+                <PneuCard data={product} productCategory={productCategory} />
               </Grid>
             ))
           ) : (
