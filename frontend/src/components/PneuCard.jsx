@@ -1,16 +1,28 @@
 import { Card, Typography, Box, IconButton, Tooltip, Stack } from "@mui/material";
 import React, { useState } from "react";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
-function PneuCard({ data }) {
+function PneuCard({ data, productCategory }) {
   const [showMessage, setShowMessage] = useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated, openLoginModal } = useAuth(); // Added
 
   const handleAddToCart = () => {
-    console.log("Added to cart:", data.name);
-    setShowMessage(true);
-    setTimeout(() => setShowMessage(false), 1500); // hide after 1.5s
+    if (!isAuthenticated) {
+      openLoginModal();
+    } else {
+      // Proceed with adding to cart logic
+      // This is where you'd typically dispatch an action to your cart context/store
+      console.log("Added to cart:", data.name);
+      setShowMessage(true);
+      setTimeout(() => setShowMessage(false), 1500); // hide after 1.5s
+    }
   };
-
+  const handleProductClick = (productId) => {
+    navigate(`/${productCategory}/details/${productId}`);
+  };
   const productImage = data?.images?.[0]?.path
     ? data.images[0].path
     : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjmvwItjeJ4l4wDoieU_TTjdoYuhTr5FBpJA&s";
@@ -55,7 +67,13 @@ function PneuCard({ data }) {
       </Box>
 
       {/* Product Info */}
-      <Box sx={{ textAlign: "center", px: 1 }}>
+      <Box sx={{ textAlign: "center", px: 1, cursor: "pointer" }} onClick={() => handleProductClick(data._id)}>
+        <Typography variant="body2" color="text.secondary" fontWeight={600} noWrap gutterBottom>
+        type: {data.type}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" fontWeight={600} noWrap gutterBottom>
+        season: {data.season}
+        </Typography>
         <Typography variant="h6" fontWeight={600} noWrap gutterBottom>
           {data.name}
         </Typography>
