@@ -13,7 +13,8 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       },
     });
   }
-async onModuleInit() {
+
+  async onModuleInit() {
     await this.$connect();
   }
 
@@ -22,7 +23,8 @@ async onModuleInit() {
   }
   
   async enableShutdownHooks(app: INestApplication) {
-    this.$on('beforeExit', async () => {
+    process.on('beforeExit', async () => {
+      await this.$disconnect();
       await app.close();
     });
   }

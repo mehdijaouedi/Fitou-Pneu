@@ -26,10 +26,15 @@ export class UtilisateurEntity {
   @IsString()
   readonly numeroTelephone: string;
 
+  @ApiProperty()
+  @IsString()
+  readonly pays: string;
+
+  @ApiProperty()
+  @IsString()
+  readonly region: string;
 
   @ApiProperty()
   @IsNotEmpty()
   readonly password: string;
-
- 
 }

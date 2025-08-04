@@ -22,4 +22,7 @@ export class UtilisateurDto {
 
   @IsString()
   pays: string;
+
+  @IsString()
+  region: string;
 }

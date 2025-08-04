@@ -9,13 +9,15 @@ import { PrismaService } from './prisma/prisma.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { SyncModule } from './sync/sync.module';
 import { ConfigModule } from '@nestjs/config';
+import { SalesModule } from './domains/sales/sales.module';
+
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     UsersModule,
     AuthModule,
     PrismaModule,
-   
+    SalesModule,
     SyncModule,
     ConfigModule.forRoot({
       isGlobal: true, // Makes the configuration available globally
