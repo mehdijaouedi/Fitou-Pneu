@@ -19,7 +19,9 @@ export class CreateUserDto {
   @IsString()
   pays: string;
 
-  
+  @IsString()
+  region: string;
+
   @IsString()
   password: string;
 }

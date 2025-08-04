@@ -1,6 +1,7 @@
 import { createClient } from '@sanity/client';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class SanityService {
@@ -14,124 +15,161 @@ export class SanityService {
   constructor(private readonly prisma: PrismaService) {}
 
   async syncUtilisateursToSanity() {
-    const utilisateurs = await this.prisma.utilisateur.findMany();
+    try {
+      const utilisateurs = await this.prisma.utilisateur.findMany();
+      console.log(`Found ${utilisateurs.length} utilisateurs to sync to Sanity`);
 
-    for (const utilisateur of utilisateurs) {
-      try {
-        const existingDoc = await this.client.fetch(
-          `*[_type == "utilisateur" && dbId == $id][0]`,
-          { id: utilisateur.id },
-        );
+      for (const utilisateur of utilisateurs) {
+        if (!utilisateur.id) {
+          console.warn(`Skipping utilisateur ${utilisateur.email} - missing ID`);
+          continue;
+        }
 
-        if (existingDoc) {
-          console.log(`Updating existing utilisateur with dbId ${utilisateur.id}`);
-          await this.client
-            .patch(existingDoc._id)
-            .set({
-              _type: 'utilisateur',
-              dbId: utilisateur.id,
-              prenom: utilisateur.prenom,
-              nom: utilisateur.nom,
-              email: utilisateur.email,
-              adresse: utilisateur.adress,
-              numeroTelephone: utilisateur.numeroTelephone,
-              pays: utilisateur.pays,        // Now a simple string
-              password: utilisateur.password, // Required field
-            })
-            .commit();
-        } else {
-          console.log('Creating new utilisateur in Sanity');
-          await this.client.create({
-            _type: 'utilisateur',
+        try {
+          const existingDoc = await this.client.fetch(
+            `*[_type == "client" && dbId == $dbId][0]`,
+            { dbId: utilisateur.id }
+          );
+
+          const docData = {
+            _type: 'client',
             dbId: utilisateur.id,
             prenom: utilisateur.prenom,
             nom: utilisateur.nom,
             email: utilisateur.email,
             adresse: utilisateur.adress,
             numeroTelephone: utilisateur.numeroTelephone,
-            pays: utilisateur.pays,        
-            password: utilisateur.password,
-          });
+            pays: utilisateur.pays,
+            region: utilisateur.region || 'Nord France',
+          };
+
+          if (existingDoc && existingDoc._id) {
+            await this.client.patch(existingDoc._id).set(docData).commit();
+            console.log(`Updated client ${utilisateur.email} in Sanity`);
+          } else {
+            await this.client.create(docData);
+            console.log(`Created new client ${utilisateur.email} in Sanity`);
+          }
+        } catch (error) {
+          console.error(`Error syncing utilisateur ${utilisateur.email}:`, error.message);
         }
-      } catch (error) {
-        console.error(`Error syncing utilisateur with ID ${utilisateur.id}:`, error);
       }
+    } catch (error) {
+      console.error('Error in syncUtilisateursToSanity:', error.message);
     }
   }
 
   async syncUtilisateursFromSanity() {
-    console.log('Starting syncUtilisateursFromSanity...');
-
     try {
-      const utilisateursList = await this.client.fetch(`*[_type == "utilisateur"]`);
-      console.log(`Fetched ${utilisateursList.length} utilisateur documents from Sanity.`);
+      const sanityClients = await this.client.fetch(`
+        *[_type == "client"] {
+          _id,
+          dbId,
+          prenom,
+          nom,
+          email,
+          adresse,
+          numeroTelephone,
+          pays,
+          region
+        }
+      `);
 
-      for (const utilisateur of utilisateursList) {
-        try {
-          if (!utilisateur.dbId) {
-            console.error(`Utilisateur document missing dbId for _id: ${utilisateur._id}`);
-            continue;
+      console.log(`Found ${sanityClients.length} clients in Sanity`);
+
+      const existingUsers = await this.prisma.utilisateur.findMany();
+      const existingUserMap = new Map(existingUsers.map(u => [u.id, u]));
+
+      for (const client of sanityClients) {
+        let dbId = client.dbId;
+
+        // Generate dbId if missing
+        if (!dbId) {
+          dbId = uuidv4();
+          try {
+            await this.client.patch(client._id)
+              .set({ dbId })
+              .commit();
+            console.log(`Added dbId to Sanity client ${client.email}`);
+          } catch (err) {
+            console.error(`Failed to update Sanity client ${client._id} with new dbId:`, err.message);
+            continue; // Skip processing this client if we can't update Sanity
           }
+        }
 
-          const existingUtilisateur = await this.prisma.utilisateur.findUnique({
-            where: { id: utilisateur.dbId },
-          });
+        const baseUserData = {
+          prenom: client.prenom || '',
+          nom: client.nom || '',
+          email: client.email || '',
+          adress: client.adresse || '',
+          numeroTelephone: client.numeroTelephone || '',
+          pays: client.pays || '',
+          region: client.region || 'Nord France',
+        };
 
-          if (existingUtilisateur) {
+        try {
+          if (existingUserMap.has(dbId)) {
             await this.prisma.utilisateur.update({
-              where: { id: utilisateur.dbId },
-              data: {
-                prenom: utilisateur.prenom,
-                nom: utilisateur.nom,
-                email: utilisateur.email,
-                adress: utilisateur.adresse || 'Unknown address',
-                numeroTelephone: utilisateur.numeroTelephone || '0000000000',
-                pays: utilisateur.pays || 'Unknown',
-                password: utilisateur.password || 'default_password', // Always required
-              },
+              where: { id: dbId },
+              data: baseUserData, // Do not update password
             });
-            console.log(`Updated utilisateur with dbId ${utilisateur.dbId} in Prisma.`);
+            console.log(`Updated user ${dbId}`);
           } else {
             await this.prisma.utilisateur.create({
               data: {
-                id: utilisateur.dbId,
-                prenom: utilisateur.prenom,
-                nom: utilisateur.nom,
-                email: utilisateur.email,
-                adress: utilisateur.adresse || 'Unknown address',
-                numeroTelephone: utilisateur.numeroTelephone || '0000000000',
-                pays: utilisateur.pays || 'Unknown',
-                password: utilisateur.password || 'default_password',
+                id: dbId,
+                ...baseUserData,
+                password: 'default_password', // Use secure logic in real app
               },
             });
-            console.log(`Created new utilisateur with dbId ${utilisateur.dbId} in Prisma.`);
+            console.log(`Created new user ${dbId}`);
           }
         } catch (error) {
-          console.error(`Error syncing utilisateur with ID ${utilisateur.dbId}:`, error);
+          console.error(`Error processing client ${dbId}:`, error.message);
         }
       }
 
-      // Delete utilisateurs that exist in DB but not in Sanity
-      try {
-        const allDbUtilisateurs = await this.prisma.utilisateur.findMany();
-        const sanityUserIds = new Set(utilisateursList.map(user => user.dbId));
+      // Handle deletions
+      const sanityDbIds = new Set(
+        sanityClients.map(c => c.dbId || '').filter(Boolean)
+      );
 
-        for (const dbUser of allDbUtilisateurs) {
-          if (!sanityUserIds.has(dbUser.id)) {
-            await this.prisma.utilisateur.delete({
-              where: { id: dbUser.id },
-            });
-            console.log(`Deleted utilisateur with dbId ${dbUser.id} from Prisma as it no longer exists in Sanity.`);
-          }
+      const usersToDelete = existingUsers.filter(u => !sanityDbIds.has(u.id));
+
+      for (const user of usersToDelete) {
+        try {
+          await this.prisma.utilisateur.delete({ where: { id: user.id } });
+          console.log(`Deleted user ${user.id} not found in Sanity`);
+        } catch (error) {
+          console.error(`Error deleting user ${user.id}:`, error.message);
         }
-      } catch (deleteError) {
-        console.error('Error deleting utilisateurs from Prisma:', deleteError);
       }
 
-    } catch (globalError) {
-      console.error('Error fetching utilisateurs from Sanity:', globalError);
+    } catch (error) {
+      console.error('Error in syncUtilisateursFromSanity:', error.message);
     }
+  }
 
-    console.log('syncUtilisateursFromSanity completed.');
+  async createSale(saleData: any) {
+    // saleData should include: clientEmail, products (array), grandTotal, status, date, etc.
+    if (!saleData.products || !Array.isArray(saleData.products)) {
+      throw new Error('Missing or invalid products array in request body');
+    }
+    const saleDoc = {
+      _type: 'sale',
+      clientEmail: saleData.clientEmail,
+      products: saleData.products.map((p: any) => ({
+        _type: 'object',
+        productType: p.productType,
+        product: { _type: 'reference', _ref: p.id },
+        quantity: p.quantity,
+        price: p.price,
+        totalPrice: p.price * p.quantity
+      })),
+      grandTotal: saleData.grandTotal,
+      status: saleData.status || 'pending',
+      date: saleData.date || new Date().toISOString(),
+    };
+    return await this.client.create(saleDoc);
   }
 }

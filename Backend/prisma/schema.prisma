@@ -15,6 +15,22 @@ model Utilisateur {
   adress          String
   numeroTelephone String
   pays            String
+  region          String  @default("Nord France")
   password        String
+  sales           Sale[]
+}
+
+model Sale {
+  id            String      @id @default(uuid())
+  utilisateur   Utilisateur? @relation(fields: [utilisateurId], references: [id])
+  utilisateurId String?
+  date          DateTime    @default(now())
+  saleType      String
+  status        String      @default("pending")
+  grandTotal    Float
+  products      Json
+  clientEmail   String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }
 

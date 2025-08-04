@@ -10,12 +10,15 @@ const style = {
   top: '50%',
   left: '50%',
   transform: 'translate(-50%, -50%)',
-  width: 400,
+  width: 600,
+  maxWidth: '90vw',
+  maxHeight: '90vh',
   bgcolor: 'background.paper',
   boxShadow: 24,
-  p: 0, // LoginPage will provide its own padding
-  borderRadius: 2,
+  p: 0,
+  borderRadius: 3,
   outline: 'none',
+  overflow: 'auto',
 };
 
 function LoginModal() {

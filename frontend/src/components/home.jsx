@@ -11,8 +11,10 @@ import {
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import PneuCard from "./PneuCard";
+import PromotionalProducts from "./PromotionalProducts";
 import sanityClient from "../../sanity/client";
-import { selctCategory } from "../../utils/myUtils";
+import { selctCategory, getRegionalPrice } from "../../utils/myUtils";
+import { useAuth } from "../context/AuthContext";
 
 const HomeSection = () => {
   const { productCategory } = useParams();
@@ -21,6 +23,10 @@ const HomeSection = () => {
   const [selectedSeason, setSelectedSeason] = useState([]);
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
+  const { user } = useAuth();
+
+  // Get user region, default to Nord France
+  const userRegion = user?.region || 'Nord France';
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -30,11 +36,17 @@ const HomeSection = () => {
             _id,
             name,
             price,
+            nordPrice,
+            sudPrice,
+            sellingPrice,
             description,
             dateAdded,
             quantity,
             type,
             season,
+            sizes,
+            isPromotion,
+            promotionDiscount,
             images[]->{ 
               _id,
               path,
@@ -43,16 +55,37 @@ const HomeSection = () => {
             }
           }
         `);
-        setProducts(data);
-        console.log("Fetched products: ", data);
-        setFilteredProducts(data);
+        
+        // Apply regional pricing to products
+        const productsWithRegionalPricing = data.map(product => {
+          if (product.sizes && Array.isArray(product.sizes)) {
+            // For pneus with sizes
+            return {
+              ...product,
+              sizes: product.sizes.map(size => ({
+                ...size,
+                price: userRegion === 'Sud France' ? (size.sudPrice || size.price) : (size.nordPrice || size.price)
+              }))
+            };
+          } else {
+            // For jentes and mixtes
+            return {
+              ...product,
+              price: userRegion === 'Sud France' ? (product.sudPrice || product.price || product.sellingPrice) : (product.nordPrice || product.price || product.sellingPrice)
+            };
+          }
+        });
+        
+        setProducts(productsWithRegionalPricing);
+        console.log("Fetched products with regional pricing: ", productsWithRegionalPricing);
+        setFilteredProducts(productsWithRegionalPricing);
       } catch (error) {
         console.error("Error fetching products:", error);
       }
     };
 
     fetchProducts();
-  }, [productCategory]);
+  }, [productCategory, userRegion]);
 
   useEffect(() => {
     let filtered = products;
@@ -103,12 +136,14 @@ const HomeSection = () => {
         : [...prevState, value]
     );
   };
-
-
+  
 
   return (
     <Box sx={{ px: 4, py: 4 }}>
-      <Grid container spacing={4}>
+      {/* Promotional Products Section */}
+      <PromotionalProducts />
+      
+      <Grid container spacing={4} sx={{ mt: 4 }}>
         <Grid item xs={12} md={9}>
           <Card
             sx={{
@@ -121,10 +156,10 @@ const HomeSection = () => {
           >
             <CardContent>
               <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                Our Offers
+                Nos Offres
               </Typography>
               <Typography variant="body1">
-                Best deals on tyres, rims, and combos!
+                Meilleures offres sur pneus et jantes !
               </Typography>
             </CardContent>
           </Card>
@@ -179,7 +214,9 @@ const HomeSection = () => {
                     />
                   }
                   label="winter"
+
                 />
+
               </Box>
             </Grid>
           </Grid>
@@ -201,7 +238,7 @@ const HomeSection = () => {
             ))
           ) : (
             <Typography variant="h6" sx={{ mt: 4 }}>
-              No products found.
+              Aucun produit trouvé.
             </Typography>
           )}
         </Grid>

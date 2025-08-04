@@ -1,4 +1,4 @@
-import { Controller, Post } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { SanityService } from './sanity.service';
 import { Cron } from '@nestjs/schedule';
 
@@ -20,8 +20,15 @@ export class SyncController {
 
     return { message: 'Data synced from Sanity to database' };
   }
+
+  @Post('sale')
+  async createSale(@Body() saleData: any) {
+    const created = await this.sanityService.createSale(saleData);
+    return { message: 'Sale created in Sanity', sale: created };
+  }
+
 // Sync database to Sanity every 30 minutes
-@Cron('0,30 * * * *')
+@Cron('0,10 * * * *')
 async handleDbToSanityCron() {
   const currentTime = new Date().toLocaleString();
   console.log(`Running scheduled DB to Sanity sync at ${currentTime}...`);
@@ -29,7 +36,7 @@ async handleDbToSanityCron() {
 }
 
 // Sync Sanity to database every 30 minutes (runs at the same time)
-@Cron('0,30 * * * *')
+@Cron('0,10 * * * *')
 async handleSanityToDbCron() {
   const currentTime = new Date().toLocaleString();
   console.log(`Running scheduled Sanity to DB sync at ${currentTime}...`);
