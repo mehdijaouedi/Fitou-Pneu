@@ -13,15 +13,25 @@ import {
   Tooltip,
   IconButton,
   Stack,
-  Button, // Added
-  Chip,   // Added
+  Button,
+  Chip,
+  TextField,
+  Divider,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  Paper,
 } from '@mui/material';
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'; // Optional: for stock chip
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'; // Optional: for stock chip
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { selctCategory } from '../../utils/myUtils';
-import sanityClient from '../../sanity/client'; // Import sanityClient
-import { useAuth } from '../context/AuthContext'; // Added
+import sanityClient from '../../sanity/client';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../store/slice/CartContext';
+import { getRegionalPrice, getRegionalPriceForSize } from '../../utils/myUtils';
 
 const FALLBACK_IMAGE_URL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjmvwItjeJ4l4wDoieU_TTjdoYuhTr5FBpJA&s";
 
@@ -31,43 +41,52 @@ function ProductDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showMessage, setShowMessage] = useState(false);
-  const { isAuthenticated, openLoginModal } = useAuth(); // Added
+  const { isAuthenticated, openLoginModal, user } = useAuth();
+  const { addToCart } = useCart();
+  const [quantity, setQuantity] = useState(1);
+
+  // Get user region, default to Nord France
+  const userRegion = user?.region || 'Nord France';
 
   const handleAddToCart = () => {
     if (!isAuthenticated) {
       openLoginModal();
-    } else {
-      // Proceed with adding to cart logic
-      // This is where you'd typically dispatch an action to your cart context/store
-      console.log("User is authenticated. Adding to cart:", product.name);
-      setShowMessage(true);
-      setTimeout(() => setShowMessage(false), 1500); // hide after 1.5s
+      return;
     }
+
+    const itemToAdd = {
+      id: product._id,
+      name: product.name,
+      price: product.sellPrice,
+      type: 'pneu',
+      size: product.size
+    };
+
+    for (let i = 0; i < quantity; i++) {
+      addToCart(itemToAdd);
+    }
+    setShowMessage(true);
+    setTimeout(() => setShowMessage(false), 1500);
   };
 
   useEffect(() => {
     const fetchProductDetails = async () => {
-      // Ensure we only set loading and clear error if component is still mounted
       try {
-        const productData = await sanityClient.fetch(`
-           *[_type == "${selctCategory(productCategory)}" && _id == "${productId}"][0]{
-            _id,
-            name,
-            price,
-            description,
-            dateAdded,
-            quantity,
-            type,
-            season,
-            images[]->{ 
-              _id,
-              path,
-              dbId,
-              url
-            }
-          }
-        `);
-          console.log("Fetched product details: ", productData);
+        const query = `*[_type == "pneu" && _id == "${productId}"][0]{
+          _id,
+          name,
+          brand,
+          model,
+          size,
+          liSi,
+          soundClass,
+          soundDb,
+          sellPrice,
+          isPromotion
+        }`;
+
+        const productData = await sanityClient.fetch(query);
+        
         setProduct(productData);
         setLoading(false);
       } catch (err) {
@@ -77,128 +96,217 @@ function ProductDetails() {
       }
     };
 
-      fetchProductDetails();
-    
-
-    }, [productCategory, productId]);
+    fetchProductDetails();
+  }, [productId]);
 
   if (loading) {
     return (
-      <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}>
-        <CircularProgress />
+      <Container sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress size={60} thickness={4} />
       </Container>
     );
   }
 
   if (error) {
     return (
-      <Container sx={{ mt: 4 }}>
-        <Alert severity="error">Error fetching product details: {error}</Alert>
+      <Container sx={{ mt: 3, mb: 4 }}>
+        <Alert severity="error" sx={{ borderRadius: 2 }}>Erreur lors du chargement du produit: {error}</Alert>
       </Container>
     );
   }
 
   if (!product) {
     return (
-      <Container sx={{ mt: 4 }}>
-        <Alert severity="warning">Product not found.</Alert>
+      <Container sx={{ mt: 3, mb: 4 }}>
+        <Alert severity="warning" sx={{ borderRadius: 2 }}>Produit non trouvé.</Alert>
       </Container>
     );
   }
 
-  const {
-    name,
-    description,
-    price,
-    type,
-    season,
-    images,
-    quantity,
-  } = product;
+  const imageUrl = FALLBACK_IMAGE_URL;
 
-  // Handle image display, assuming the first image is the primary one
-  const imageUrl = images && images?.[0]?.path
-  ? images[0].path : FALLBACK_IMAGE_URL; // Corrected: use images[0].path (from destructured product)
+  const renderSpecifications = () => {
+    return (
+      <Box sx={{ mt: 2 }}>
+        <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600, color: 'text.primary' }}>
+          Informations du Produit
+        </Typography>
+        <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 1.5, overflow: 'hidden' }}>
+          <Table size="small">
+            <TableBody>
+              <TableRow>
+                
+                <TableCell component="th" scope="row" sx={{ fontWeight: 600, width: '40%', bgcolor: 'grey.50', py: 1 }}>
+                  Marque
+                </TableCell>
+                <TableCell sx={{ py: 1 }}>{product.brand || '-'}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell component="th" scope="row" sx={{ fontWeight: 600, bgcolor: 'grey.50', py: 1 }}>
+                  Modèle
+                </TableCell>
+                <TableCell sx={{ py: 1 }}>{product.model || '-'}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell component="th" scope="row" sx={{ fontWeight: 600, bgcolor: 'grey.50', py: 1 }}>
+                  Taille
+                </TableCell>
+                <TableCell sx={{ py: 1 }}>{product.size || '-'}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell component="th" scope="row" sx={{ fontWeight: 600, bgcolor: 'grey.50', py: 1 }}>
+                  LI/SI
+                </TableCell>
+                <TableCell sx={{ py: 1 }}>{product.liSi || '-'}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell component="th" scope="row" sx={{ fontWeight: 600, bgcolor: 'grey.50', py: 1 }}>
+                  Classe Sonore
+                </TableCell>
+                <TableCell sx={{ py: 1 }}>{product.soundClass || '-'}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell component="th" scope="row" sx={{ fontWeight: 600, bgcolor: 'grey.50', py: 1 }}>
+                  DB Sonore
+                </TableCell>
+                <TableCell sx={{ py: 1 }}>{product.soundDb || '-'}</TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell component="th" scope="row" sx={{ fontWeight: 600, bgcolor: 'grey.50', py: 1 }}>
+                  Promotion
+                </TableCell>
+                <TableCell sx={{ py: 1 }}>{product.isPromotion ? 'Oui' : 'Non'}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+    );
+  };
 
   return (
-    <Container sx={{ py: 4 }}>
-      <Card sx={{ display: 'flex', overflow: 'hidden', borderRadius: 3, boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.07)" }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={6}>
-            <CardMedia
-              component="img"
-              image={imageUrl}
-              alt={name}
-              sx={{
-                width: '100%',
-                height: { xs: 300, sm: 400, md: 'auto' },
-                maxHeight: { md: 550 },
-                objectFit: 'contain',
-                p: { xs: 1, md: 2 },
-                borderRadius: 9,
-                // boxShadow: 3,
-                transition: 'transform 0.3s ease-in-out',
-                '&:hover': {
-                  transform: 'scale(1.05)',
-                },
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%', p: { xs: 2, md: 4 } }}>
-              <Typography gutterBottom variant="h4" component="h1" fontWeight="bold">
-                {name}
-              </Typography>
+    <Container maxWidth="lg" sx={{ py: 3 }}>
+      <Grid container spacing={1}>
+        <Grid item xs={12} md={5}>
+          <Box
+            component="img"
+            src={imageUrl}
+            alt={product.name}
+            sx={{
+              width: '100%',
+              height: { xs: 250, sm: 350, md: 'auto' },
+              maxHeight: { md: 450 },
+              objectFit: 'contain',
+              p: { xs: 1, md: 2 },
+              borderRadius: 2,
+              transition: 'transform 0.3s ease-in-out',
+              '&:hover': {
+                transform: 'scale(1.05)',
+              },
+            }}
+          />
+        </Grid>
+        <Grid item xs={12} md={7}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', p: { xs: 1.5, md: 3 } }}>
+            <Typography gutterBottom variant="h5" component="h1" sx={{ fontWeight: 700, color: 'text.primary' }}>
+              {product.name || 'Produit sans nom'}
+            </Typography>
 
-              <Typography variant="h3" color="primary.main" fontWeight="bold" sx={{ my: 2 }}>
-                {price ? `${price.toFixed(2)} €` : 'Price not available'}
-              </Typography>
+            <Typography variant="h4" color="primary.main" sx={{ my: 1.5, fontWeight: 700 }}>
+              {product.sellPrice ? `${product.sellPrice.toFixed(2)} €` : 'Prix non disponible'}
+            </Typography>
 
-              <Typography variant="body1" color="text.secondary" paragraph sx={{ flexGrow: 1, my: 2, lineHeight: 1.7 }}>
-                {description || 'No detailed description available.'}
-              </Typography>
-
-              {/* Specifications Section */}
-              <Box sx={{ my: 2 }}>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 'medium' }}>
-                  Specifications
+            {product.size && (
+              <Box sx={{ my: 1.5 }}>
+                <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600, color: 'text.primary' }}>
+                  Taille
                 </Typography>
-                <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" sx={{ mb: 1 }}>
-                  <Chip label={`Category: ${productCategory}`} variant="outlined" />
-                  {type && <Chip label={`Type: ${type}`} variant="outlined" />}
-                  {season && <Chip label={`Season: ${season}`} variant="outlined" />}
-                </Stack>
                 <Chip
-                  label={quantity > 0 ? `In Stock: ${quantity}` : "Out of Stock"}
-                  color={quantity > 0 ? "success" : "error"}
-                  icon={quantity > 0 ? <CheckCircleOutlineIcon fontSize="small" /> : <ErrorOutlineIcon fontSize="small" />}
-                  sx={{ fontWeight: 'medium', mt: 1 }}
+                  label={product.size}
+                  color="primary"
+                  variant="filled"
+                  size="medium"
+                  sx={{ 
+                    fontWeight: 600,
+                    fontSize: '0.9rem'
+                  }}
                 />
               </Box>
+            )}
 
-              {/* Add to Cart Section */}
-              <Box sx={{ mt: 'auto', pt: 'auto', mb:5 }}> {/* mt: 'auto' pushes this to the bottom */}
+            {renderSpecifications()}
+
+            <Box sx={{ pt: 1.5 }}>
+              <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 1.5 }}>
+                <TextField
+                  type="number"
+                  size="small"
+                  value={quantity}
+                  inputProps={{ 
+                    min: 1, 
+                    style: { 
+                      width: 50, 
+                      textAlign: 'center',
+                      fontWeight: 500,
+                      fontSize: '0.875rem'
+                    } 
+                  }}
+                  onChange={e => {
+                    let val = parseInt(e.target.value, 10);
+                    if (isNaN(val) || val < 1) val = 1;
+                    setQuantity(val);
+                  }}
+                  sx={{ 
+                    background: '#fff', 
+                    borderRadius: 1,
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: 'primary.main',
+                      },
+                    },
+                  }}
+                  label="Qté"
+                />
                 <Button
                   variant="contained"
                   color="primary"
                   startIcon={<ShoppingCartIcon />}
                   onClick={handleAddToCart}
-                  disabled={!product || quantity === 0} // Disable if product not loaded or out of stock
-                  fullWidth
-                  sx={{ py: 1.5, fontSize: '1rem', textTransform: 'none', fontWeight: 'bold', borderRadius: 2 }}
+                  disabled={!product}
+                  sx={{ 
+                    py: 1, 
+                    fontSize: '0.875rem', 
+                    textTransform: 'none', 
+                    fontWeight: 600, 
+                    borderRadius: 1.5,
+                    boxShadow: 1,
+                    minWidth: 140,
+                    '&:hover': {
+                      boxShadow: 2,
+                    }
+                  }}
                 >
-                  Add to Cart
+                  Ajouter au Panier
                 </Button>
-                {showMessage && (
-                  <Typography variant="body2" color="success.main" textAlign="center" sx={{ mt: 1.5, fontWeight: 'medium' }}>
-                    Added to cart successfully!
-                  </Typography>
-                )}
-              </Box>
-            </CardContent>
-          </Grid>
+              </Stack>
+              {showMessage && (
+                <Typography 
+                  variant="body2" 
+                  color="success.main" 
+                  textAlign="center" 
+                  sx={{ 
+                    mt: 1, 
+                    fontWeight: 500,
+                    animation: 'fadeIn 0.5s ease-in-out'
+                  }}
+                >
+                  Ajouté au panier avec succès !
+                </Typography>
+              )}
+            </Box>
+          </Box>
         </Grid>
-      </Card>
+      </Grid>
     </Container>
   );
 }

@@ -33,7 +33,7 @@ const Navbar = () => {
           <Box sx={{ width: "33%" }} />
           <Box sx={{ width: "33%", textAlign: "center" }}>
             <Typography variant="h5" sx={{ fontWeight: "bold", color: "black", fontFamily: "serif" }}>
-              FitouPneus
+              FitPneus
             </Typography>
           </Box>
           <Box sx={{ width: "33%", display: "flex", justifyContent: "flex-end", gap: 1 }}>
@@ -57,11 +57,11 @@ const Navbar = () => {
                   <MenuItem disabled>{user?.prenom}</MenuItem>
                   <MenuItem disabled>{user?.email}</MenuItem>
                   <Divider />
-                  <MenuItem onClick={() => { navigate("/history"); handleClose(); }}>
-                    History
+                  <MenuItem onClick={() => { navigate("/ClientHistorique"); handleClose(); }}>
+                    Historique
                   </MenuItem>
                   <MenuItem onClick={() => { logoutAction(); handleClose(); }}>
-                    Logout
+                    Déconnexion
                   </MenuItem>
                 </Menu>
               </>
@@ -75,10 +75,10 @@ const Navbar = () => {
                   transformOrigin={{ vertical: "top", horizontal: "right" }}
                 >
                   <MenuItem onClick={() => { openLoginModal(); handleClose(); }}>
-                    Login
+                    Connexion
                   </MenuItem>
                   <MenuItem onClick={() => { openSignUpModal(); handleClose(); }}>
-                  Sign Up
+                  Inscription
                   </MenuItem>
                 </Menu>
               </>
@@ -91,6 +91,21 @@ const Navbar = () => {
       {/* Category Buttons */}
       <Box sx={{ backgroundColor: "white", py: 4 }}>
         <Stack direction="row" justifyContent="center" spacing={6}>
+          <Button
+            variant="outlined"
+            onClick={() => navigate("/")}
+            sx={{
+              color: "black",
+              borderColor: "black",
+              fontSize: "1.2rem",
+              px: 4,
+              py: 1.5,
+              borderRadius: "20px",
+              fontWeight: "bold",
+            }}
+          >
+            Accueil
+          </Button>
           <Button
             variant="outlined"
             onClick={() => navigate("/pneus")}
@@ -108,7 +123,7 @@ const Navbar = () => {
           </Button>
           <Button
             variant="outlined"
-            onClick={() => navigate("/jantes")}
+            onClick={() => navigate("/jentes")}
             sx={{
               color: "black",
               borderColor: "black",
@@ -123,7 +138,7 @@ const Navbar = () => {
           </Button>
           <Button
             variant="outlined"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/contact")}
             sx={{
               color: "black",
               borderColor: "black",
@@ -134,7 +149,7 @@ const Navbar = () => {
               fontWeight: "bold",
             }}
           >
-            Pneus & Jantes
+            Contact
           </Button>
         </Stack>
       </Box>

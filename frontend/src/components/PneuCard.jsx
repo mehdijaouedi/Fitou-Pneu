@@ -1,23 +1,35 @@
-import { Card, Typography, Box, IconButton, Tooltip, Stack } from "@mui/material";
+import { Card, Typography, Box, IconButton, Tooltip, Stack, TextField, Chip } from "@mui/material";
 import React, { useState } from "react";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../store/slice/CartContext";
+import { getRegionalPrice } from "../../utils/myUtils";
 
 function PneuCard({ data, productCategory }) {
   const [showMessage, setShowMessage] = useState(false);
+  const [quantity, setQuantity] = useState('');
   const navigate = useNavigate();
-  const { isAuthenticated, openLoginModal } = useAuth(); // Added
+  const { isAuthenticated, openLoginModal, user } = useAuth(); // Added user
+  const { addToCart } = useCart();
+
+  // Get user region, default to Nord France
+  const userRegion = user?.region || 'Nord France';
 
   const handleAddToCart = () => {
     if (!isAuthenticated) {
       openLoginModal();
     } else {
-      // Proceed with adding to cart logic
-      // This is where you'd typically dispatch an action to your cart context/store
-      console.log("Added to cart:", data.name);
+      for (let i = 0; i < quantity; i++) {
+        addToCart({
+          id: data._id,
+          name: data.name,
+          price: getRegionalPrice(data, userRegion)
+        });
+      }
       setShowMessage(true);
       setTimeout(() => setShowMessage(false), 1500); // hide after 1.5s
+      setQuantity('');
     }
   };
   const handleProductClick = (productId) => {
@@ -39,8 +51,24 @@ function PneuCard({ data, productCategory }) {
         borderRadius: 4,
         boxShadow: 4,
         backgroundColor: "#fff",
+        position: "relative",
       }}
     >
+      {/* Promotion Badge */}
+      {data.isPromotion && data.promotionDiscount && (
+        <Chip
+          label={`-${data.promotionDiscount}%`}
+          color="error"
+          sx={{
+            position: "absolute",
+            top: -10,
+            right: -10,
+            zIndex: 1,
+            fontWeight: "bold",
+          }}
+        />
+      )}
+
       {/* Image */}
       <Box
         sx={{
@@ -54,7 +82,7 @@ function PneuCard({ data, productCategory }) {
       >
         <img
           src={productImage}
-          alt={data.name || "Product"}
+          alt={data.name || "Produit"}
           style={{
             position: "absolute",
             top: 0,
@@ -69,10 +97,10 @@ function PneuCard({ data, productCategory }) {
       {/* Product Info */}
       <Box sx={{ textAlign: "center", px: 1, cursor: "pointer" }} onClick={() => handleProductClick(data._id)}>
         <Typography variant="body2" color="text.secondary" fontWeight={600} noWrap gutterBottom>
-        type: {data.type}
+        Type: {data.type}
         </Typography>
         <Typography variant="body2" color="text.secondary" fontWeight={600} noWrap gutterBottom>
-        season: {data.season}
+        Saison: {data.season}
         </Typography>
         <Typography variant="h6" fontWeight={600} noWrap gutterBottom>
           {data.name}
@@ -96,17 +124,48 @@ function PneuCard({ data, productCategory }) {
 
       {/* Price + Cart + Message */}
       <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 2, px: 1 }}>
-        <Typography variant="h6" fontWeight="bold" color="primary">
-          {data.price} €
-        </Typography>
+        <Box>
+          {data.isPromotion && data.promotionDiscount ? (
+            <Box>
+              <Typography 
+                variant="body2" 
+                color="text.secondary" 
+                sx={{ textDecoration: 'line-through' }}
+              >
+                {data.price} €
+              </Typography>
+              <Typography variant="h6" fontWeight="bold" color="error">
+                {Math.round(data.price * (1 - data.promotionDiscount / 100))} €
+              </Typography>
+            </Box>
+          ) : (
+            <Typography variant="h6" fontWeight="bold" color="primary">
+              {data.price} €
+            </Typography>
+          )}
+        </Box>
+
+        <TextField
+          type="number"
+          size="small"
+          value={quantity}
+          inputProps={{ min: 1, style: { width: 50, textAlign: 'center' } }}
+          onChange={e => {
+            let val = parseInt(e.target.value, 10);
+            if (isNaN(val) || val < 1) val = 1;
+            setQuantity(val);
+          }}
+          sx={{ mr: 1, background: '#fff', borderRadius: 1 }}
+          label="Qté"
+        />
 
         {showMessage && (
           <Typography variant="body2" color="success.main" sx={{ fontSize: "0.75rem", mx: 1 }}>
-            Added successfully
+            Ajouté avec succès
           </Typography>
         )}
 
-        <Tooltip title="Add to cart">
+        <Tooltip title="Ajouter au panier">
           <IconButton color="primary" onClick={handleAddToCart}>
             <ShoppingCartIcon />
           </IconButton>

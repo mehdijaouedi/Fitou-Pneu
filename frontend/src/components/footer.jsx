@@ -1,72 +1,116 @@
 import React from "react";
-import { Box, Typography, Grid, Link, IconButton } from "@mui/material";
+import {
+  Box,
+  Grid,
+  Typography,
+  IconButton,
+  Link,
+  Divider,
+} from "@mui/material";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import InstagramIcon from "@mui/icons-material/Instagram";
+import FacebookIcon from "@mui/icons-material/Facebook";
 import EmailIcon from "@mui/icons-material/Email";
 import PhoneIcon from "@mui/icons-material/Phone";
-import InfoIcon from "@mui/icons-material/Info";
-import HelpIcon from "@mui/icons-material/Help";
-import ContactMailIcon from "@mui/icons-material/ContactMail";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 const Footer = () => {
   return (
     <Box
       component="footer"
       sx={{
-        backgroundColor: "#f4f4f4",
-        mt: 8,
-        py: 4,
-        px: 2,
-        borderTop: "1px solid #ccc",
+        backgroundColor: "#1a1a1a",
+        color: "white",
+        py: 6,
+        mt: "auto",
+        width: "100vw",
+        position: "relative",
+        left: "50%",
+        right: "50%",
+        marginLeft: "-50vw",
+        marginRight: "-51vw",
+        marginBottom: "-50vw",
+
       }}
     >
-      <Grid container spacing={4} justifyContent="center">
-        {/* Contact Info */}
-        <Grid item xs={12} sm={6} md={4} color={"black"}>
-          <Typography variant="h6" gutterBottom>
-            Contact
-          </Typography>
-          <Box display="flex" alignItems="center" mb={1}>
-            <PhoneIcon sx={{ mr: 1 }} />
-            <Typography>+216 12 345 678</Typography>
-          </Box>
-          <Box display="flex" alignItems="center" mb={1}>
-            <EmailIcon sx={{ mr: 1 }} />
-            <Typography>contact@example.com</Typography>
-          </Box>
-          <Box display="flex" alignItems="center">
-            <WhatsAppIcon sx={{ mr: 1 }} />
-            <Typography>WhatsApp: +216 98 765 432</Typography>
-          </Box>
+      <Box sx={{ px: { xs: 2, md: 8 } }}>
+        <Grid container spacing={4} alignItems="flex-start">
+          {/* Company Info */}
+          <Grid item xs={12} md={6}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: "bold", color: "#fff" }}>
+              FitPneus
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 2, color: "#b0b0b0" }}>
+              Votre partenaire de confiance dans les pneus, Nous fournissons les meilleurs prix et qualités.
+            </Typography>
+            <Box sx={{ mt: 2 }}>
+              <IconButton color="inherit" aria-label="Facebook" sx={{ mr: 1 }}>
+                <FacebookIcon />
+              </IconButton>
+              <IconButton color="inherit" aria-label="Instagram" sx={{ mr: 1 }}>
+                <InstagramIcon />
+              </IconButton>
+              <IconButton color="inherit" aria-label="WhatsApp">
+                <WhatsAppIcon />
+              </IconButton>
+            </Box>
+          </Grid>
+
+          {/* Contact Info */}
+          <Grid item xs={12} md={6}>
+            <Typography variant="h6" gutterBottom sx={{ fontWeight: "bold", color: "#fff" }}>
+              Contactez-nous
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <PhoneIcon />
+                <Typography variant="body2" color="#b0b0b0">+216 12 345 678</Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <EmailIcon />
+                <Typography variant="body2" color="#b0b0b0">contact@fitpneus.com</Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <LocationOnIcon />
+                <Typography variant="body2" color="#b0b0b0">
+                  123 Rue Principale, Tunis, Tunisie
+                </Typography>
+              </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <AccessTimeIcon />
+                <Typography variant="body2" color="#b0b0b0">
+                  Lun-Sam: 8h00 - 20h00
+                </Typography>
+              </Box>
+            </Box>
+          </Grid>
         </Grid>
 
-        {/* Navigation Links */}
-        <Grid item xs={12} sm={6} md={4}color={"black"}>
-          <Typography variant="h6" gutterBottom>
-            Quick Links
+        <Divider sx={{ my: 4, borderColor: "rgba(255, 255, 255, 0.1)" }} />
+
+        {/* Bottom Bar */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 2,
+          }}
+        >
+          <Typography variant="body2" color="#b0b0b0">
+            © {new Date().getFullYear()} FitPneus. Tous droits réservés.
           </Typography>
-          <Box display="flex" flexDirection="column" gap={1}>
-            <Link href="#" underline="hover" display="flex" alignItems="center">
-              <InfoIcon fontSize="small" sx={{ mr: 1 }} /> About Us
+          <Box sx={{ display: "flex", gap: 2 }}>
+            <Link href="/privacy" color="inherit" underline="hover" variant="body2">
+              Politique de Confidentialité
             </Link>
-            <Link href="#" underline="hover" display="flex" alignItems="center">
-              <HelpIcon fontSize="small" sx={{ mr: 1 }} /> FAQ
-            </Link>
-            <Link href="#" underline="hover" display="flex" alignItems="center">
-              <ContactMailIcon fontSize="small" sx={{ mr: 1 }} /> Contact
-            </Link>
-            <Link href="#" underline="hover" display="flex" alignItems="center">
-              <InstagramIcon fontSize="small" sx={{ mr: 1 }} /> Instagram
+            <Link href="/terms" color="inherit" underline="hover" variant="body2">
+              Conditions d'Utilisation
             </Link>
           </Box>
-        </Grid>
-      </Grid>
-
-      {/* Footer Bottom Text */}
-      <Box mt={4} textAlign="center">
-        <Typography variant="body2" color="text.secondary">
-          © {new Date().getFullYear()} FitouPneu. All rights reserved.
-        </Typography>
+        </Box>
       </Box>
     </Box>
   );

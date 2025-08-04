@@ -44,7 +44,7 @@ function LoginPage({ onLoginSuccess, isModal = false }) { // Added props
       const data = await response.json();
       console.log('my data', data?.Authorization)
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed. Please check your credentials.');
+        throw new Error(data.message || 'Échec de la connexion. Veuillez vérifier vos identifiants.');
       }
 
       // Use AuthContext to handle login
@@ -60,7 +60,7 @@ function LoginPage({ onLoginSuccess, isModal = false }) { // Added props
       }
     } catch (err) {
       console.error("Login error:", err);
-      setError(err.message || 'An unexpected error occurred.');
+      setError(err.message || 'Une erreur inattendue s\'est produite.');
     } finally {
       setLoading(false);
     }
@@ -70,7 +70,7 @@ function LoginPage({ onLoginSuccess, isModal = false }) { // Added props
     <Container component="main" maxWidth="xs" sx={{ mt: isModal ? 2 : 8, mb: isModal ? 2 : 0 }}> {/* Adjust margin for modal */}
       <Paper elevation={3} sx={{ padding: 4, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <Typography component="h1" variant="h5" gutterBottom>
-          Sign In
+          Se Connecter
         </Typography>
         {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
@@ -79,7 +79,7 @@ function LoginPage({ onLoginSuccess, isModal = false }) { // Added props
             required
             fullWidth
             id="email"
-            label="Email Address"
+            label="Adresse Email"
             name="email"
             autoComplete="email"
             autoFocus
@@ -92,7 +92,7 @@ function LoginPage({ onLoginSuccess, isModal = false }) { // Added props
             required
             fullWidth
             name="password"
-            label="Password"
+            label="Mot de Passe"
             type="password"
             id="password"
             autoComplete="current-password"
@@ -107,13 +107,13 @@ function LoginPage({ onLoginSuccess, isModal = false }) { // Added props
             sx={{ mt: 3, mb: 2 }}
             disabled={loading}
           >
-            {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
+            {loading ? <CircularProgress size={24} color="inherit" /> : 'Se Connecter'}
           </Button>
           {isModal && ( // Only show this link if not in modal, modal can have its own navigation or close
             <Typography variant="body2" align="center">
-              Don't have an account?{' '}
+              Vous n'avez pas de compte ?{' '}
               <p onClick={openSignUpModal} style={{ cursor: 'pointer', color: '#1976d2' }}>
-                Sign Up
+                S'inscrire
               </p>
             </Typography>
           )}
