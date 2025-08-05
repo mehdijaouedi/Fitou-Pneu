@@ -9,6 +9,8 @@ import {
   Container,
   Chip,
   Paper,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import PneuCard from "./PneuCard";
@@ -24,6 +26,9 @@ const HomePage = () => {
   const [dynamicContent, setDynamicContent] = useState(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Get user region, default to Nord France
   const userRegion = user?.region || 'Nord France';
@@ -168,17 +173,22 @@ const HomePage = () => {
             border: `2px solid ${color}`,
           }}
         >
-          <CardContent sx={{ flexGrow: 1 }}>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: "bold", color }}>
+          <CardContent sx={{ flexGrow: 1, p: { xs: 2, md: 3 } }}>
+            <Typography 
+              variant={isMobile ? "h6" : "h5"} 
+              gutterBottom 
+              sx={{ fontWeight: "bold", color }}
+            >
               {title}
             </Typography>
-            <Grid container spacing={2}>
+            <Grid container spacing={isMobile ? 1 : 2}>
               {products.map((product) => (
                 <Grid item xs={12} key={product._id}>
                   {product.isPromotion && product.promotionDiscount && (
                     <Chip
                       label={`-${product.promotionDiscount}%`}
                       color="error"
+                      size={isMobile ? "small" : "medium"}
                       sx={{
                         position: "absolute",
                         top: 10,
@@ -196,6 +206,7 @@ const HomePage = () => {
               <Button
                 variant="outlined"
                 onClick={() => handleViewAll(category)}
+                size={isMobile ? "small" : "medium"}
                 sx={{ borderColor: color, color }}
               >
                 Voir Tous les {title}
@@ -214,58 +225,83 @@ const HomePage = () => {
 
   if (!hasPromotionalProducts) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Typography variant="h4" sx={{ textAlign: "center", mb: 4 }}>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+        <Typography 
+          variant={isMobile ? "h5" : "h4"} 
+          sx={{ textAlign: "center", mb: { xs: 2, md: 4 } }}
+        >
           Bienvenue chez Fitou Pneu
         </Typography>
-        <Typography variant="h6" sx={{ textAlign: "center", mb: 4 }}>
+        <Typography 
+          variant={isMobile ? "body1" : "h6"} 
+          sx={{ textAlign: "center", mb: { xs: 2, md: 4 } }}
+        >
           Aucun produit promotionnel disponible pour le moment.
         </Typography>
-        <Grid container spacing={3} justifyContent="center">
+        <Grid container spacing={2} justifyContent="center">
           <Grid item>
-            <Button variant="contained" onClick={() => navigate("/pneus")}>
+            <Button 
+              variant="contained" 
+              size={isMobile ? "small" : "medium"}
+              onClick={() => navigate("/pneus")}
+            >
               Parcourir les Pneus
             </Button>
           </Grid>
           <Grid item>
-            <Button variant="contained" onClick={() => navigate("/jentes")}>
+            <Button 
+              variant="contained" 
+              size={isMobile ? "small" : "medium"}
+              onClick={() => navigate("/jentes")}
+            >
               Parcourir les Jantes
             </Button>
           </Grid>
-        
         </Grid>
       </Container>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
       {/* Hero Section */}
-      <Box sx={{ mb: 6, textAlign: "center" }}>
-        <Typography variant="h2" sx={{ fontWeight: "bold", mb: 2 }}>
+      <Box sx={{ mb: { xs: 3, md: 6 }, textAlign: "center" }}>
+        <Typography 
+          variant={isMobile ? "h4" : "h2"} 
+          sx={{ fontWeight: "bold", mb: { xs: 1, md: 2 } }}
+        >
           🎉 Offres Spéciales
         </Typography>
-        <Typography variant="h5" sx={{ color: "text.secondary", mb: 4 }}>
-          Découvrez nos meilleures offres sur les pneus et les jantes  !
+        <Typography 
+          variant={isMobile ? "body1" : "h5"} 
+          sx={{ color: "text.secondary", mb: { xs: 2, md: 4 } }}
+        >
+          Découvrez nos meilleures offres sur les pneus et les jantes !
         </Typography>
       </Box>
 
       {/* Dynamic Content Box */}
       {dynamicContent && (
-        <Box sx={{ mb: 6 }}>
+        <Box sx={{ mb: { xs: 3, md: 6 } }}>
           <Paper
             elevation={3}
             sx={{
-              p: 4,
+              p: { xs: 2, md: 4 },
               backgroundColor: dynamicContent.backgroundColor || "#f5f5f5",
               color: dynamicContent.textColor || "#333",
               borderRadius: 2,
             }}
           >
-            <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+            <Typography 
+              variant={isMobile ? "h6" : "h4"} 
+              sx={{ fontWeight: "bold" }}
+            >
               {dynamicContent.title || "Annonce Spéciale"}
             </Typography>
-            <Typography variant="body1" sx={{ fontSize: "1.1rem", lineHeight: 1.6 }}>
+            <Typography 
+              variant={isMobile ? "body2" : "body1"} 
+              sx={{ fontSize: { xs: "0.9rem", md: "1.1rem" }, lineHeight: 1.6 }}
+            >
               {dynamicContent.content || "Aucun contenu disponible"}
             </Typography>
           </Paper>
@@ -273,21 +309,24 @@ const HomePage = () => {
       )}
 
       {/* Promotional Products Grid */}
-      <Grid container spacing={4}>
+      <Grid container spacing={isMobile ? 2 : 4}>
         {renderPromotionalSection(promotionalProducts.pneus, "pneus", "Pneus en Promotion", "#1976d2")}
         {renderPromotionalSection(promotionalProducts.jentes, "jentes", "Jantes en Promotion", "#388e3c")}
       </Grid>
 
       {/* Quick Navigation */}
-      <Box sx={{ mt: 6, textAlign: "center" }}>
-        <Typography variant="h5" sx={{ mb: 3 }}>
+      <Box sx={{ mt: { xs: 3, md: 6 }, textAlign: "center" }}>
+        <Typography 
+          variant={isMobile ? "h6" : "h5"} 
+          sx={{ mb: { xs: 2, md: 3 } }}
+        >
           Parcourir Toutes les Catégories
         </Typography>
         <Grid container spacing={2} justifyContent="center">
           <Grid item>
             <Button 
               variant="contained" 
-              size="large"
+              size={isMobile ? "medium" : "large"}
               onClick={() => navigate("/pneus")}
               sx={{ backgroundColor: "#1976d2" }}
             >
@@ -297,14 +336,13 @@ const HomePage = () => {
           <Grid item>
             <Button 
               variant="contained" 
-              size="large"
+              size={isMobile ? "medium" : "large"}
               onClick={() => navigate("/jentes")}
               sx={{ backgroundColor: "#388e3c" }}
             >
               Jantes
             </Button>
           </Grid>
-         
         </Grid>
       </Box>
     </Container>
