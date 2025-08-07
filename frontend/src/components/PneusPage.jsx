@@ -12,7 +12,16 @@ import {
   Chip,
   Button,
   Pagination,
+  useTheme,
+  useMediaQuery,
+  Drawer,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
 } from "@mui/material";
+import FilterListIcon from "@mui/icons-material/FilterList";
 import { useNavigate } from "react-router-dom";
 import PneuCard from "./PneuCard";
 import sanityClient from "../../sanity/client";
@@ -27,9 +36,13 @@ const PneusPage = () => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const productsPerPage = 12;
   const { user } = useAuth();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Get user region, default to Nord France
   const userRegion = user?.region || 'Nord France';
@@ -169,6 +182,146 @@ const PneusPage = () => {
     setPage(value);
   };
 
+  const handleMobileFilterToggle = () => {
+    setMobileFilterOpen(!mobileFilterOpen);
+  };
+
+  const renderFilters = () => (
+    <Card sx={{ p: { xs: 2, md: 3 }, height: "fit-content" }}>
+      <Typography variant="h6" sx={{ fontWeight: "bold", mb: 3 }}>
+        Filtres
+      </Typography>
+      
+      {/* Search */}
+      <TextField
+        label="Rechercher par nom, taille ou classe sonore"
+        variant="outlined"
+        fullWidth
+        value={searchTerm}
+        onChange={handleSearchChange}
+        placeholder="Ex: 205/55R16, A, Michelin..."
+        size={isMobile ? "small" : "medium"}
+        sx={{ mb: 3 }}
+      />
+
+      {/* Type Filters */}
+      {uniqueTypes.length > 0 && (
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: "bold" }}>
+            Type
+          </Typography>
+          {uniqueTypes.map((type) => (
+            <FormControlLabel
+              key={type}
+              control={
+                <Checkbox
+                  value={type}
+                  checked={selectedType.includes(type)}
+                  onChange={handleTypeChange}
+                  size={isMobile ? "small" : "medium"}
+                  sx={{
+                    "&.Mui-checked": {
+                      color: "#1976d2",
+                    },
+                  }}
+                />
+              }
+              label={type}
+              sx={{ display: "block", mb: 1 }}
+            />
+          ))}
+        </Box>
+      )}
+
+      {/* Season Filters */}
+      {uniqueSeasons.length > 0 && (
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: "bold" }}>
+            Saison
+          </Typography>
+          {uniqueSeasons.map((season) => (
+            <FormControlLabel
+              key={season}
+              control={
+                <Checkbox
+                  value={season}
+                  checked={selectedSeason.includes(season)}
+                  onChange={handleSeasonChange}
+                  size={isMobile ? "small" : "medium"}
+                  sx={{
+                    "&.Mui-checked": {
+                      color: "#1976d2",
+                    },
+                  }}
+                />
+              }
+              label={season}
+              sx={{ display: "block", mb: 1 }}
+            />
+          ))}
+        </Box>
+      )}
+
+      {/* Season Type Filters */}
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: "bold" }}>
+          Type de Saison
+        </Typography>
+        <FormControlLabel
+          control={
+            <Checkbox
+              value="summer"
+              checked={selectedSeasonType.includes("summer")}
+              onChange={handleSeasonTypeChange}
+              size={isMobile ? "small" : "medium"}
+              sx={{
+                "&.Mui-checked": {
+                  color: "#1976d2",
+                },
+              }}
+            />
+          }
+          label="Été"
+          sx={{ display: "block", mb: 1 }}
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              value="winter"
+              checked={selectedSeasonType.includes("winter")}
+              onChange={handleSeasonTypeChange}
+              size={isMobile ? "small" : "medium"}
+              sx={{
+                "&.Mui-checked": {
+                  color: "#1976d2",
+                },
+              }}
+            />
+          }
+          label="Hiver"
+          sx={{ display: "block", mb: 1 }}
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              value="4season"
+              checked={selectedSeasonType.includes("4season")}
+              onChange={handleSeasonTypeChange}
+              size={isMobile ? "small" : "medium"}
+              sx={{
+                "&.Mui-checked": {
+                  color: "#1976d2",
+                },
+              }}
+            />
+          }
+          label="4 Saisons"
+          sx={{ display: "block", mb: 1 }}
+        />
+      </Box>
+    </Card>
+  );
+
   // Get current page products
   const getCurrentPageProducts = () => {
     const startIndex = (page - 1) * productsPerPage;
@@ -181,156 +334,50 @@ const PneusPage = () => {
   const uniqueSeasons = [...new Set(products.map(product => product.season).filter(Boolean))];
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
       {/* Header */}
-      <Box sx={{ mb: 4, textAlign: "center" }}>
-        <Typography variant="h3" sx={{ fontWeight: "bold", mb: 2 }}>
-          🚗 Collection de Pneus
+      <Box sx={{ mb: { xs: 2, md: 4 }, textAlign: "center" }}>
+        <Typography 
+          variant={isMobile ? "h4" : "h3"} 
+          sx={{ fontWeight: "bold", mb: { xs: 1, md: 2 } }}
+        >
+          🚗 Nos Pneus
         </Typography>
-        <Typography variant="h6" sx={{ color: "text.secondary" }}>
-          Trouvez les pneus parfaits pour votre véhicule
+        <Typography 
+          variant={isMobile ? "body1" : "h6"} 
+          sx={{ color: "text.secondary" }}
+        >
+          Découvrez notre large gamme de pneus de qualité
         </Typography>
       </Box>
 
-      <Grid container spacing={4}>
-        {/* Filters Sidebar */}
-        <Grid item xs={12} md={3}>
-          <Card sx={{ p: 3, position: "sticky", top: 20 }}>
-            <Typography variant="h6" sx={{ mb: 3, fontWeight: "bold" }}>
-              Filtres
-            </Typography>
-            
-            {/* Search */}
-            <TextField
-              label="Rechercher par nom, taille ou classe sonore"
-              variant="outlined"
-              fullWidth
-              value={searchTerm}
-              onChange={handleSearchChange}
-              placeholder="Ex: 205/55R16, A, Michelin..."
-              sx={{ mb: 3 }}
-            />
+      {/* Mobile Filter Button */}
+      {isMobile && (
+        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+          <Button
+            variant="outlined"
+            startIcon={<FilterListIcon />}
+            onClick={handleMobileFilterToggle}
+            sx={{ mb: 2 }}
+          >
+            Filtres
+          </Button>
+        </Box>
+      )}
 
-            {/* Type Filters */}
-            {uniqueTypes.length > 0 && (
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: "bold" }}>
-                  Type
-                </Typography>
-                {uniqueTypes.map((type) => (
-                  <FormControlLabel
-                    key={type}
-                    control={
-                      <Checkbox
-                        value={type}
-                        checked={selectedType.includes(type)}
-                        onChange={handleTypeChange}
-                        sx={{
-                          "&.Mui-checked": {
-                            color: "#1976d2",
-                          },
-                        }}
-                      />
-                    }
-                    label={type}
-                    sx={{ display: "block", mb: 1 }}
-                  />
-                ))}
-              </Box>
-            )}
-
-            {/* Season Filters */}
-            {uniqueSeasons.length > 0 && (
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: "bold" }}>
-                  Saison
-                </Typography>
-                {uniqueSeasons.map((season) => (
-                  <FormControlLabel
-                    key={season}
-                    control={
-                      <Checkbox
-                        value={season}
-                        checked={selectedSeason.includes(season)}
-                        onChange={handleSeasonChange}
-                        sx={{
-                          "&.Mui-checked": {
-                            color: "#1976d2",
-                          },
-                        }}
-                      />
-                    }
-                    label={season}
-                    sx={{ display: "block", mb: 1 }}
-                  />
-                ))}
-              </Box>
-            )}
-
-            {/* Season Type Filters */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: "bold" }}>
-                Type de Saison
-              </Typography>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    value="summer"
-                    checked={selectedSeasonType.includes("summer")}
-                    onChange={handleSeasonTypeChange}
-                    sx={{
-                      "&.Mui-checked": {
-                        color: "#1976d2",
-                      },
-                    }}
-                  />
-                }
-                label="Été"
-                sx={{ display: "block", mb: 1 }}
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    value="winter"
-                    checked={selectedSeasonType.includes("winter")}
-                    onChange={handleSeasonTypeChange}
-                    sx={{
-                      "&.Mui-checked": {
-                        color: "#1976d2",
-                      },
-                    }}
-                  />
-                }
-                label="Hiver"
-                sx={{ display: "block", mb: 1 }}
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    value="4season"
-                    checked={selectedSeasonType.includes("4season")}
-                    onChange={handleSeasonTypeChange}
-                    sx={{
-                      "&.Mui-checked": {
-                        color: "#1976d2",
-                      },
-                    }}
-                  />
-                }
-                label="4 Saisons"
-                sx={{ display: "block", mb: 1 }}
-              />
-            </Box>
-
-          
-          </Card>
-        </Grid>
+      <Grid container spacing={isMobile ? 2 : 4}>
+        {/* Filters Sidebar - Desktop */}
+        {!isMobile && (
+          <Grid item xs={12} md={3}>
+            {renderFilters()}
+          </Grid>
+        )}
 
         {/* Products Grid */}
         <Grid item xs={12} md={9}>
           {getCurrentPageProducts().length > 0 ? (
             <>
-              <Grid container spacing={3}>
+              <Grid container spacing={isMobile ? 1 : 3}>
                 {getCurrentPageProducts().map((product) => (
                   <Grid item xs={12} sm={6} md={4} key={product._id}>
                     <Card
@@ -344,6 +391,7 @@ const PneusPage = () => {
                         <Chip
                           label={`-${product.promotionDiscount}%`}
                           color="error"
+                          size={isMobile ? "small" : "medium"}
                           sx={{
                             position: "absolute",
                             top: -10,
@@ -361,24 +409,28 @@ const PneusPage = () => {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
+                <Box sx={{ display: "flex", justifyContent: "center", mt: { xs: 2, md: 4 } }}>
                   <Pagination
                     count={totalPages}
                     page={page}
                     onChange={handlePageChange}
                     color="primary"
-                    size="large"
+                    size={isMobile ? "medium" : "large"}
                   />
                 </Box>
               )}
             </>
           ) : (
-            <Box sx={{ textAlign: "center", py: 8 }}>
-              <Typography variant="h6" sx={{ mb: 2 }}>
+            <Box sx={{ textAlign: "center", py: { xs: 4, md: 8 } }}>
+              <Typography 
+                variant={isMobile ? "h6" : "h5"} 
+                sx={{ mb: 2 }}
+              >
                 Aucun pneu trouvé correspondant à vos critères
               </Typography>
               <Button
                 variant="outlined"
+                size={isMobile ? "small" : "medium"}
                 onClick={() => {
                   setSearchTerm("");
                   setSelectedType([]);
@@ -392,6 +444,26 @@ const PneusPage = () => {
           )}
         </Grid>
       </Grid>
+
+      {/* Mobile Filter Drawer */}
+      <Drawer
+        anchor="left"
+        open={mobileFilterOpen}
+        onClose={handleMobileFilterToggle}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: 280,
+            p: 2,
+          },
+        }}
+      >
+        <Box sx={{ p: 2 }}>
+          <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
+            Filtres
+          </Typography>
+          {renderFilters()}
+        </Box>
+      </Drawer>
     </Container>
   );
 };

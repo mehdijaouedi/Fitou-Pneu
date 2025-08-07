@@ -18,7 +18,10 @@ import {
   DialogActions,
   Alert,
   Snackbar,
-  CircularProgress
+  CircularProgress,
+  useTheme,
+  useMediaQuery,
+  Stack,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
@@ -44,6 +47,10 @@ function CartPage() {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
   const [success, setSuccess] = React.useState(false);
+  const [finalTotal, setFinalTotal] = React.useState(0);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const calculateTotal = () => {
     return cartItems.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
@@ -119,6 +126,8 @@ function CartPage() {
         throw new Error(errorData.error || 'Échec de la synchronisation de la vente vers Sanity');
       }
 
+      const finalTotal = calculateTotal(); // Store the total before clearing cart
+      setFinalTotal(finalTotal); // Store the final total in state
       clearCart(); // Clear cart immediately after successful order
       setSuccess(true);
       setOpenDialog(true);
@@ -147,226 +156,326 @@ function CartPage() {
   const total = calculateTotal();
 
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%)',
-        py: 6,
-      }}
-    >
-      <Paper
-        elevation={6}
-        sx={{
-          maxWidth: 600,
-          mx: 'auto',
-          p: 4,
-          borderRadius: 5,
-          boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.12)',
-          background: 'rgba(255,255,255,0.95)',
-        }}
-      >
-        <Typography variant="h4" gutterBottom sx={{ color: 'black', fontWeight: 'bold', mb: 2, letterSpacing: 1 }}>
-          🛒 Votre Panier d'Achat
-        </Typography>
-        <Divider sx={{ mb: 3 }} />
+    <Box sx={{ 
+      minHeight: '100vh', 
+      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+      py: { xs: 2, md: 4 }
+    }}>
+      <Box sx={{ 
+        maxWidth: 'lg', 
+        mx: 'auto', 
+        px: { xs: 2, md: 4 },
+        py: { xs: 2, md: 4 }
+      }}>
+        <Paper
+          elevation={3}
+          sx={{
+            p: { xs: 2, md: 4 },
+            borderRadius: 3,
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(10px)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+          }}
+        >
+          <Typography 
+            variant={isMobile ? "h5" : "h4"} 
+            sx={{ 
+              color: 'black', 
+              mb: { xs: 2, md: 3 }, 
+              fontWeight: 700, 
+              textAlign: 'center',
+              letterSpacing: 0.5 
+            }}
+          >
+            🛒 Mon Panier
+          </Typography>
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-
-        {success && (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            Commande passée avec succès ! Veuillez suivre les instructions de paiement.
-          </Alert>
-        )}
-
-        {(!cartItems?.length || success) ? (
-          <Box sx={{ p: 4, textAlign: 'center', background: 'linear-gradient(90deg, #f0f4f8 60%, #e0e7ef 100%)', borderRadius: 3, boxShadow: 2 }}>
-            <Typography variant="h6" sx={{ color: 'black', mb: 1, fontWeight: 600 }}>
-              {success ? 'Merci pour votre commande !' : 'Votre panier est vide.'}
-            </Typography>
-            <Typography variant="body1" sx={{ color: 'gray', mb: 2 }}>
-              {success 
-                ? 'Votre commande a été passée avec succès. Veuillez vérifier votre email pour les détails de la commande.'
-                : 'Parcourez nos produits et ajoutez des articles à votre panier pour les voir ici.'}
-            </Typography>
-            <img 
-              src={success 
-                ? "https://cdn-icons-png.flaticon.com/512/190/190411.png" 
-                : "https://cdn-icons-png.flaticon.com/512/2038/2038854.png"} 
-              alt={success ? "Succès" : "Panier vide"} 
-              width={80} 
-              style={{ opacity: 0.7 }} 
-            />
-          </Box>
-        ) : (
-          <>
-            <Typography variant="h6" sx={{ color: 'black', mb: 2, fontWeight: 600, letterSpacing: 0.5 }}>
-              Articles du Panier
-            </Typography>
-            <List>
-              {cartItems?.map((item) => (
-                <ListItem
-                  key={item.id}
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: 'center',
-                    mb: 1,
-                    background: 'linear-gradient(90deg, #f5f7fa 60%, #e0e7ef 100%)',
-                    borderRadius: 3,
-                    boxShadow: 1,
-                    transition: 'transform 0.15s',
-                    '&:hover': {
-                      transform: 'scale(1.025)',
-                      boxShadow: '0 4px 16px 0 rgba(31,38,135,0.10)',
-                    },
-                  }}
-                >
-                  <ListItemText
-                    primary={<span style={{ color: 'black', fontWeight: 600 }}>{item.name} <span style={{ color: '#888', fontWeight: 400 }}>(x{item.quantity})</span></span>}
-                    secondary={<span style={{ color: 'black' }}>Prix unitaire: <b>{item.price} €</b> — Total: <b>{item.price * item.quantity} €</b></span>}
-                    primaryTypographyProps={{ style: { color: 'black' } }}
-                    secondaryTypographyProps={{ style: { color: 'black' } }}
-                  />
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, ml: 2 }}>
-                    <TextField
-                      type="number"
-                      size="small"
-                      value={item.quantity}
-                      inputProps={{ min: 1, style: { width: 60, textAlign: 'center' } }}
-                      onChange={e => {
-                        let val = parseInt(e.target.value, 10);
-                        if (isNaN(val) || val < 1) val = 1;
-                        increaseQuantity(item.id, val - item.quantity);
-                      }}
-                      sx={{ mr: 1, background: '#fff', borderRadius: 1 }}
-                      label="Qté"
-                    />
-                    <Tooltip title="Diminuer de 1">
-                      <IconButton onClick={() => decreaseQuantity(item.id)} size="small" color="primary">
-                        <RemoveIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Augmenter de 1">
-                      <IconButton onClick={() => increaseQuantity(item.id, 1)} size="small" color="primary">
-                        <AddIcon />
-                      </IconButton>
-                    </Tooltip>
-                    
-                    <Tooltip title="Retirer du panier">
-                      <IconButton onClick={() => removeFromCart(item.id)} size="small" color="error">
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </ListItem>
-              ))}
-            </List>
-            <Divider sx={{ my: 3 }} />
-            <Paper
-              elevation={0}
-              sx={{
-                p: 3,
-                background: 'linear-gradient(90deg, #e0e7ef 60%, #f0f4f8 100%)',
-                textAlign: 'center',
-                borderRadius: 3,
-                boxShadow: 0,
-              }}
-            >
-              <Typography variant="h6" sx={{ color: 'black', fontWeight: 'bold', letterSpacing: 0.5 }}>
-                Résumé du Panier
+          {cartItems?.length === 0 ? (
+            <Box sx={{ 
+              textAlign: 'center', 
+              py: { xs: 4, md: 8 },
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 2
+            }}>
+              <AddCircleOutlineIcon sx={{ fontSize: { xs: 60, md: 80 }, color: 'grey.400' }} />
+              <Typography 
+                variant={isMobile ? "h6" : "h5"} 
+                sx={{ color: 'grey.600', mb: 1 }}
+              >
+                Votre panier est vide
               </Typography>
-              <Typography variant="body1" sx={{ color: 'black', mt: 1, fontSize: '1.2rem' }}>
-                Total: <b>{total} €</b>
+              <Typography 
+                variant={isMobile ? "body2" : "body1"} 
+                sx={{ color: 'grey.500', mb: 3 }}
+              >
+                Ajoutez des produits pour commencer vos achats
               </Typography>
               <Button
                 variant="contained"
-                color="primary"
-                disabled={loading}
-                startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <PaymentIcon />}
+                size={isMobile ? "medium" : "large"}
+                onClick={() => window.history.back()}
                 sx={{ 
-                  mt: 2, 
-                  fontWeight: 'bold', 
-                  letterSpacing: 1, 
-                  borderRadius: 2, 
-                  px: 4, 
-                  py: 1.2, 
-                  fontSize: '1.1rem', 
-                  boxShadow: '0 2px 8px 0 rgba(31,38,135,0.10)',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 4px 12px 0 rgba(31,38,135,0.15)',
-                  },
-                  transition: 'all 0.2s ease-in-out'
+                  borderRadius: 2,
+                  px: { xs: 3, md: 4 },
+                  py: { xs: 1, md: 1.5 }
                 }}
-                onClick={handleSubmit}
               >
-                {loading ? 'Traitement...' : 'Valider la Commande'}
+                Continuer les Achats
               </Button>
-            </Paper>
-          </>
-        )}
-      </Paper>
+            </Box>
+          ) : (
+            <>
+              <Typography 
+                variant={isMobile ? "h6" : "h5"} 
+                sx={{ color: 'black', mb: 2, fontWeight: 600, letterSpacing: 0.5 }}
+              >
+                Articles du Panier
+              </Typography>
+              <List>
+                {cartItems?.map((item) => (
+                  <ListItem
+                    key={item.id}
+                    sx={{
+                      display: "flex",
+                      flexDirection: { xs: "column", sm: "row" },
+                      justifyContent: "space-between",
+                      alignItems: { xs: "stretch", sm: 'center' },
+                      mb: 1,
+                      background: 'linear-gradient(90deg, #f5f7fa 60%, #e0e7ef 100%)',
+                      borderRadius: 3,
+                      boxShadow: 1,
+                      transition: 'transform 0.15s',
+                      p: { xs: 2, md: 3 },
+                      '&:hover': {
+                        transform: 'scale(1.025)',
+                        boxShadow: '0 4px 16px 0 rgba(31,38,135,0.10)',
+                      },
+                    }}
+                  >
+                    <ListItemText
+                      primary={
+                        <span style={{ color: 'black', fontWeight: 600 }}>
+                          {item.name} 
+                          <span style={{ color: '#888', fontWeight: 400 }}>
+                            (x{item.quantity})
+                          </span>
+                        </span>
+                      }
+                      secondary={
+                        <span style={{ color: 'black' }}>
+                          Prix unitaire: <b>{item.price} €</b> — Total: <b>{item.price * item.quantity} €</b>
+                        </span>
+                      }
+                      primaryTypographyProps={{ style: { color: 'black' } }}
+                      secondaryTypographyProps={{ style: { color: 'black' } }}
+                      sx={{ mb: { xs: 2, sm: 0 } }}
+                    />
+                    <Stack 
+                      direction={isMobile ? "row" : "row"} 
+                      alignItems="center" 
+                      spacing={1} 
+                      sx={{ 
+                        ml: { xs: 0, sm: 2 },
+                        width: { xs: "100%", sm: "auto" },
+                        justifyContent: { xs: "center", sm: "flex-end" }
+                      }}
+                    >
+                      <TextField
+                        type="number"
+                        size="small"
+                        value={item.quantity}
+                        inputProps={{ 
+                          min: 1, 
+                          style: { 
+                            width: isMobile ? 50 : 60, 
+                            textAlign: 'center',
+                            fontSize: { xs: '0.8rem', md: '0.875rem' }
+                          } 
+                        }}
+                        onChange={e => {
+                          let val = parseInt(e.target.value, 10);
+                          if (isNaN(val) || val < 1) val = 1;
+                          increaseQuantity(item.id, val - item.quantity);
+                        }}
+                        sx={{ 
+                          mr: 1, 
+                          background: '#fff', 
+                          borderRadius: 1,
+                          minWidth: { xs: 60, md: 80 }
+                        }}
+                        label="Qté"
+                      />
+                      <Tooltip title="Diminuer de 1">
+                        <IconButton 
+                          onClick={() => decreaseQuantity(item.id)} 
+                          size={isMobile ? "small" : "medium"} 
+                          color="primary"
+                        >
+                          <RemoveIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Augmenter de 1">
+                        <IconButton 
+                          onClick={() => increaseQuantity(item.id, 1)} 
+                          size={isMobile ? "small" : "medium"} 
+                          color="primary"
+                        >
+                          <AddIcon />
+                        </IconButton>
+                      </Tooltip>
+                      
+                      <Tooltip title="Retirer du panier">
+                        <IconButton 
+                          onClick={() => removeFromCart(item.id)} 
+                          size={isMobile ? "small" : "medium"} 
+                          color="error"
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </Stack>
+                  </ListItem>
+                ))}
+              </List>
+              <Divider sx={{ my: 3 }} />
+              <Paper
+                elevation={0}
+                sx={{
+                  p: { xs: 2, md: 3 },
+                  background: 'linear-gradient(90deg, #e0e7ef 60%, #f0f4f8 100%)',
+                  textAlign: "center",
+                  borderRadius: 3,
+                  boxShadow: 0,
+                }}
+              >
+                <Typography 
+                  variant={isMobile ? "h6" : "h5"} 
+                  sx={{ color: 'black', fontWeight: 'bold', letterSpacing: 0.5 }}
+                >
+                  Résumé du Panier
+                </Typography>
+                <Typography 
+                  variant={isMobile ? "h6" : "h5"} 
+                  sx={{ color: 'black', mt: 1, fontSize: { xs: '1.1rem', md: '1.2rem' } }}
+                >
+                  Total: <b>{total} €</b>
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  disabled={loading}
+                  startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <PaymentIcon />}
+                  size={isMobile ? "medium" : "large"}
+                  sx={{ 
+                    mt: 2, 
+                    fontWeight: 'bold', 
+                    letterSpacing: 1, 
+                    borderRadius: 2, 
+                    px: { xs: 3, md: 4 }, 
+                    py: { xs: 1, md: 1.2 }, 
+                    fontSize: { xs: '1rem', md: '1.1rem' }, 
+                    boxShadow: '0 2px 8px 0 rgba(31,38,135,0.10)',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 12px 0 rgba(31,38,135,0.15)',
+                    },
+                    transition: 'all 0.2s ease-in-out'
+                  }}
+                  onClick={handleSubmit}
+                >
+                  {loading ? 'Traitement...' : 'Valider la Commande'}
+                </Button>
+              </Paper>
+            </>
+          )}
+        </Paper>
 
-      <Dialog 
-        open={openDialog} 
-        onClose={handleCloseDialog}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle sx={{ 
-          bgcolor: 'primary.main', 
-          color: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 1
-        }}>
-          <PaymentIcon /> Instructions de Paiement
-        </DialogTitle>
-        <DialogContent sx={{ mt: 2 }}>
-          <Typography variant="h6" sx={{ mb: 2, color: 'primary.main' }}>
-            Total de la Commande: {total} €
-          </Typography>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            Pour finaliser votre commande, veuillez suivre ces étapes :
-          </Typography>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-              1. Détails du Virement Bancaire :
+        <Dialog 
+          open={openDialog} 
+          onClose={handleCloseDialog}
+          maxWidth="sm"
+          fullWidth
+          sx={{
+            '& .MuiDialog-paper': {
+              borderRadius: 3,
+            }
+          }}
+        >
+          <DialogTitle sx={{ 
+            bgcolor: 'primary.main', 
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1
+          }}>
+            <PaymentIcon /> Instructions de Paiement
+          </DialogTitle>
+          <DialogContent sx={{ mt: 2, p: { xs: 2, md: 3 } }}>
+            <Typography 
+              variant={isMobile ? "h6" : "h5"} 
+              sx={{ mb: 2, color: 'primary.main' }}
+            >
+              Total de la Commande: {finalTotal} €
             </Typography>
-            <Paper sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-              <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
-                Banque: {PAYMENT_INFO.bank}<br />
-                Nom du Compte: {PAYMENT_INFO.accountName}<br />
-                IBAN: {PAYMENT_INFO.iban}<br />
-                BIC: {PAYMENT_INFO.bic}
-              </Typography>
-            </Paper>
-          </Box>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-              2. Informations de Contact :
+            <Typography 
+              variant={isMobile ? "body2" : "body1"} 
+              sx={{ mb: 2 }}
+            >
+              Pour finaliser votre commande, veuillez suivre ces étapes :
             </Typography>
-            <Paper sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
-              <Typography variant="body1">
-                Téléphone: {PAYMENT_INFO.phone}<br />
-                Email: {PAYMENT_INFO.email}
+            <Box sx={{ mb: 3 }}>
+              <Typography 
+                variant={isMobile ? "subtitle2" : "subtitle1"} 
+                sx={{ fontWeight: 'bold', mb: 1 }}
+              >
+                1. Détails du Virement Bancaire :
               </Typography>
-            </Paper>
-          </Box>
-          <Alert severity="info" sx={{ mt: 2 }}>
-            Après avoir effectué le paiement, veuillez nous appeler pour confirmer votre commande. Votre commande sera traitée dans les 24 heures.
-          </Alert>
-        </DialogContent>
-        <DialogActions sx={{ p: 2, bgcolor: '#f5f5f5' }}>
-          <Button onClick={handleCloseDialog} variant="contained" color="primary">
-            Fermer
-          </Button>
-        </DialogActions>
-      </Dialog>
+              <Paper sx={{ p: { xs: 1.5, md: 2 }, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                <Typography 
+                  variant={isMobile ? "body2" : "body1"} 
+                  sx={{ fontFamily: 'monospace', fontSize: { xs: '0.8rem', md: '0.875rem' } }}
+                >
+                  Banque: {PAYMENT_INFO.bank}<br />
+                  Nom du Compte: {PAYMENT_INFO.accountName}<br />
+                  IBAN: {PAYMENT_INFO.iban}<br />
+                  BIC: {PAYMENT_INFO.bic}
+                </Typography>
+              </Paper>
+            </Box>
+            <Box sx={{ mb: 3 }}>
+              <Typography 
+                variant={isMobile ? "subtitle2" : "subtitle1"} 
+                sx={{ fontWeight: 'bold', mb: 1 }}
+              >
+                2. Informations de Contact :
+              </Typography>
+              <Paper sx={{ p: { xs: 1.5, md: 2 }, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                <Typography 
+                  variant={isMobile ? "body2" : "body1"}
+                >
+                  Téléphone: {PAYMENT_INFO.phone}<br />
+                  Email: {PAYMENT_INFO.email}
+                </Typography>
+              </Paper>
+            </Box>
+            <Alert severity="info" sx={{ mt: 2 }}>
+              Après avoir effectué le paiement, veuillez nous appeler pour confirmer votre commande. Votre commande sera traitée dans les 24 heures.
+            </Alert>
+          </DialogContent>
+          <DialogActions sx={{ p: { xs: 2, md: 3 }, bgcolor: '#f5f5f5' }}>
+            <Button 
+              onClick={handleCloseDialog} 
+              variant="contained" 
+              color="primary"
+              size={isMobile ? "small" : "medium"}
+            >
+              Fermer
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
     </Box>
   );
 }

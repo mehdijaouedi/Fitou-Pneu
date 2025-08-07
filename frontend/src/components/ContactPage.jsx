@@ -12,6 +12,8 @@ import {
   Divider,
   Alert,
   Snackbar,
+  useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import {
   Phone,
@@ -33,6 +35,9 @@ const ContactPage = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Initialize EmailJS
   useEffect(() => {
@@ -96,22 +101,31 @@ const ContactPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
       {/* Header */}
-      <Box sx={{ mb: 6, textAlign: "center" }}>
-        <Typography variant="h3" sx={{ fontWeight: "bold", mb: 2 }}>
+      <Box sx={{ mb: { xs: 3, md: 6 }, textAlign: "center" }}>
+        <Typography 
+          variant={isMobile ? "h4" : "h3"} 
+          sx={{ fontWeight: "bold", mb: { xs: 1, md: 2 } }}
+        >
           📞 Contactez-nous
         </Typography>
-        <Typography variant="h6" sx={{ color: "text.secondary" }}>
+        <Typography 
+          variant={isMobile ? "body1" : "h6"} 
+          sx={{ color: "text.secondary" }}
+        >
           Contactez notre équipe pour toute question ou assistance
         </Typography>
       </Box>
 
-      <Grid container spacing={4}>
+      <Grid container spacing={isMobile ? 2 : 4}>
         {/* Contact Information */}
         <Grid item xs={12} md={4}>
-          <Card sx={{ height: "100%", p: 3 }}>
-            <Typography variant="h5" sx={{ fontWeight: "bold", mb: 3 }}>
+          <Card sx={{ height: "100%", p: { xs: 2, md: 3 } }}>
+            <Typography 
+              variant={isMobile ? "h6" : "h5"} 
+              sx={{ fontWeight: "bold", mb: 3 }}
+            >
               Nos Coordonnées
             </Typography>
             
@@ -119,11 +133,17 @@ const ContactPage = () => {
               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                 <Phone sx={{ color: "primary.main", mr: 2 }} />
                 <Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                  <Typography 
+                    variant={isMobile ? "subtitle2" : "subtitle1"} 
+                    sx={{ fontWeight: "bold" }}
+                  >
                     Téléphone
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    +33 1 23 45 67 89
+                  <Typography 
+                    variant={isMobile ? "body2" : "body1"} 
+                    color="text.secondary"
+                  >
+                    +0033 759368879
                   </Typography>
                 </Box>
               </Box>
@@ -131,10 +151,16 @@ const ContactPage = () => {
               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                 <Email sx={{ color: "primary.main", mr: 2 }} />
                 <Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                  <Typography 
+                    variant={isMobile ? "subtitle2" : "subtitle1"} 
+                    sx={{ fontWeight: "bold" }}
+                  >
                     Email
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography 
+                    variant={isMobile ? "body2" : "body1"} 
+                    color="text.secondary"
+                  >
                     contact@fitpneus.com
                   </Typography>
                 </Box>
@@ -143,46 +169,76 @@ const ContactPage = () => {
               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                 <LocationOn sx={{ color: "primary.main", mr: 2 }} />
                 <Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                  <Typography 
+                    variant={isMobile ? "subtitle2" : "subtitle1"} 
+                    sx={{ fontWeight: "bold" }}
+                  >
                     Adresse
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography 
+                    variant={isMobile ? "body2" : "body1"} 
+                    color="text.secondary"
+                  >
                     123 Rue de la Paix<br />
                     75001 Paris, France
-                </Typography>
+                  </Typography>
                 </Box>
               </Box>
 
               <Box sx={{ display: "flex", alignItems: "center" }}>
                 <AccessTime sx={{ color: "primary.main", mr: 2 }} />
                 <Box>
-                  <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                  <Typography 
+                    variant={isMobile ? "subtitle2" : "subtitle1"} 
+                    sx={{ fontWeight: "bold" }}
+                  >
                     Horaires d'ouverture
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography 
+                    variant={isMobile ? "body2" : "body1"} 
+                    color="text.secondary"
+                  >
                     Lun-Ven: 8h00 - 18h00<br />
                     Sam: 9h00 - 16h00<br />
                     Dim: Fermé
-                </Typography>
+                  </Typography>
                 </Box>
               </Box>
             </Box>
 
             <Divider sx={{ my: 3 }} />
 
-            <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
+            <Typography 
+              variant={isMobile ? "subtitle1" : "h6"} 
+              sx={{ fontWeight: "bold", mb: 2 }}
+            >
               Pourquoi choisir Fitou Pneus ?
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography 
+              variant={isMobile ? "body2" : "body1"} 
+              color="text.secondary" 
+              sx={{ mb: 2 }}
+            >
               • Sélection de pneus premium des meilleures marques
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography 
+              variant={isMobile ? "body2" : "body1"} 
+              color="text.secondary" 
+              sx={{ mb: 2 }}
+            >
               • Installation et équilibrage expert
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography 
+              variant={isMobile ? "body2" : "body1"} 
+              color="text.secondary" 
+              sx={{ mb: 2 }}
+            >
               • Prix compétitifs et options de financement
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography 
+              variant={isMobile ? "body2" : "body1"} 
+              color="text.secondary"
+            >
               • Assistance routière 24h/24 et 7j/7
             </Typography>
           </Card>
@@ -190,13 +246,16 @@ const ContactPage = () => {
 
         {/* Contact Form */}
         <Grid item xs={12} md={8}>
-          <Card sx={{ p: 4 }}>
-            <Typography variant="h5" sx={{ fontWeight: "bold", mb: 3 }}>
+          <Card sx={{ p: { xs: 2, md: 4 } }}>
+            <Typography 
+              variant={isMobile ? "h6" : "h5"} 
+              sx={{ fontWeight: "bold", mb: 3 }}
+            >
               Envoyez-nous un message
             </Typography>
             
             <Box component="form" onSubmit={handleSubmit} sx={{ mt: 2 }}>
-              <Grid container spacing={3}>
+              <Grid container spacing={isMobile ? 2 : 3}>
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
@@ -205,32 +264,35 @@ const ContactPage = () => {
                     value={formData.name}
                     onChange={handleInputChange}
                     required
-                    variant="outlined"
+                    size={isMobile ? "small" : "medium"}
+                    sx={{ mb: 2 }}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Adresse email"
+                    label="Email"
                     name="email"
                     type="email"
                     value={formData.email}
                     onChange={handleInputChange}
                     required
-                    variant="outlined"
+                    size={isMobile ? "small" : "medium"}
+                    sx={{ mb: 2 }}
                   />
                 </Grid>
-                <Grid item xs={12} sm={6}>
+                <Grid item xs={12}>
                   <TextField
                     fullWidth
                     label="Numéro de téléphone"
                     name="phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    variant="outlined"
+                    size={isMobile ? "small" : "medium"}
+                    sx={{ mb: 2 }}
                   />
-                  </Grid>
-                <Grid item xs={12} sm={6}>
+                </Grid>
+                <Grid item xs={12}>
                   <TextField
                     fullWidth
                     label="Sujet"
@@ -238,9 +300,10 @@ const ContactPage = () => {
                     value={formData.subject}
                     onChange={handleInputChange}
                     required
-                    variant="outlined"
+                    size={isMobile ? "small" : "medium"}
+                    sx={{ mb: 2 }}
                   />
-              </Grid>
+                </Grid>
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
@@ -250,28 +313,29 @@ const ContactPage = () => {
                     onChange={handleInputChange}
                     required
                     multiline
-                    rows={6}
-                    variant="outlined"
-                    placeholder="Parlez-nous de votre demande, de vos besoins en pneus ou de toute question que vous avez..."
+                    rows={isMobile ? 4 : 6}
+                    size={isMobile ? "small" : "medium"}
+                    sx={{ mb: 3 }}
                   />
                 </Grid>
                 <Grid item xs={12}>
-              <Button
+                  <Button
                     type="submit"
                     variant="contained"
-                    size="large"
-                    startIcon={<Send />}
+                    color="primary"
                     disabled={loading}
+                    startIcon={<Send />}
+                    size={isMobile ? "medium" : "large"}
                     sx={{
-                      py: 1.5,
-                      px: 4,
-                      fontSize: "1rem",
-                      fontWeight: "bold",
-                      textTransform: "none",
+                      py: { xs: 1, md: 1.5 },
+                      px: { xs: 3, md: 4 },
+                      fontSize: { xs: '0.9rem', md: '1rem' },
+                      fontWeight: 'bold',
+                      borderRadius: 2,
                     }}
                   >
                     {loading ? "Envoi en cours..." : "Envoyer le message"}
-              </Button>
+                  </Button>
                 </Grid>
               </Grid>
             </Box>
@@ -279,40 +343,14 @@ const ContactPage = () => {
         </Grid>
       </Grid>
 
-      {/* Map Section */}
-      <Box sx={{ mt: 6 }}>
-        <Card sx={{ p: 4 }}>
-          <Typography variant="h5" sx={{ fontWeight: "bold", mb: 3 }}>
-            📍 Trouvez-nous
-          </Typography>
-          <Box
-            sx={{
-              height: 400,
-              backgroundColor: "grey.100",
-              borderRadius: 2,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              border: "2px dashed",
-              borderColor: "grey.300",
-            }}
-          >
-            <Typography variant="h6" color="text.secondary">
-              Carte interactive bientôt disponible
-            </Typography>
-          </Box>
-        </Card>
-      </Box>
-
-      {/* Success/Error Messages */}
       <Snackbar
         open={success}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: "100%" }}>
-          Message envoyé avec succès ! Nous vous répondrons bientôt.
+        <Alert onClose={handleCloseSnackbar} severity="success" sx={{ width: '100%' }}>
+          Message envoyé avec succès ! Nous vous répondrons dans les plus brefs délais.
         </Alert>
       </Snackbar>
 
@@ -320,9 +358,9 @@ const ContactPage = () => {
         open={!!error}
         autoHideDuration={6000}
         onClose={() => setError("")}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert onClose={() => setError("")} severity="error" sx={{ width: "100%" }}>
+        <Alert onClose={() => setError("")} severity="error" sx={{ width: '100%' }}>
           {error}
         </Alert>
       </Snackbar>

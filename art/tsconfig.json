@@ -13,5 +13,5 @@
     "incremental": true
   },
   "include": ["**/*.ts", "**/*.js","**/*.jsx", "Widget/ProductStatsWidget.tsx"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "dist"]
 }

@@ -9,7 +9,9 @@
     "start": "sanity start",
     "build": "sanity build",
     "deploy": "sanity deploy",
-    "deploy-graphql": "sanity graphql deploy"
+    "deploy-graphql": "sanity graphql deploy",
+    "populate-pneus": "node run_populate.js",
+    "process-bulk-import": "node processBulkImport.js"
   },
   "keywords": [
     "sanity"
@@ -25,7 +27,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "sanity": "^3.57.0",
-    "styled-components": "^6.1.8"
+    "styled-components": "^6.1.15",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@sanity/eslint-config-studio": "^4.0.0",

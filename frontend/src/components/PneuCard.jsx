@@ -1,4 +1,4 @@
-import { Card, Typography, Box, IconButton, Tooltip, Stack, TextField, Chip } from "@mui/material";
+import { Card, Typography, Box, IconButton, Tooltip, Stack, TextField, Chip, useTheme, useMediaQuery } from "@mui/material";
 import React, { useState } from "react";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useNavigate } from "react-router-dom";
@@ -12,6 +12,9 @@ function PneuCard({ data, productCategory }) {
   const navigate = useNavigate();
   const { isAuthenticated, openLoginModal, user } = useAuth(); // Added user
   const { addToCart } = useCart();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Get user region, default to Nord France
   const userRegion = user?.region || 'Nord France';
@@ -42,16 +45,22 @@ function PneuCard({ data, productCategory }) {
   return (
     <Card
       sx={{
-        width: 260,
-        height: 380,
+        width: { xs: '100%', sm: 280, md: 260 },
+        height: { xs: 'auto', sm: 400, md: 380 },
+        minHeight: { xs: 350, sm: 400, md: 380 },
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
-        padding: 2,
+        padding: { xs: 1.5, md: 2 },
         borderRadius: 4,
         boxShadow: 4,
         backgroundColor: "#fff",
         position: "relative",
+        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: 8,
+        },
       }}
     >
       {/* Promotion Badge */}
@@ -59,6 +68,7 @@ function PneuCard({ data, productCategory }) {
         <Chip
           label={`-${data.promotionDiscount}%`}
           color="error"
+          size={isMobile ? "small" : "medium"}
           sx={{
             position: "absolute",
             top: -10,
@@ -77,7 +87,7 @@ function PneuCard({ data, productCategory }) {
           position: "relative",
           borderRadius: 2,
           overflow: "hidden",
-          mb: 2,
+          mb: { xs: 1.5, md: 2 },
         }}
       >
         <img
@@ -95,82 +105,92 @@ function PneuCard({ data, productCategory }) {
       </Box>
 
       {/* Product Info */}
-      <Box sx={{ textAlign: "center", px: 1, cursor: "pointer" }} onClick={() => handleProductClick(data._id)}>
-        <Typography variant="body2" color="text.secondary" fontWeight={600} noWrap gutterBottom>
-        Type: {data.type}
+      <Box sx={{ textAlign: "center", px: { xs: 0.5, md: 1 }, cursor: "pointer" }} onClick={() => handleProductClick(data._id)}>
+        <Typography 
+          variant={isMobile ? "caption" : "body2"} 
+          color="text.secondary" 
+          fontWeight={600} 
+          noWrap 
+          gutterBottom
+        >
+          Type: {data.type}
         </Typography>
-        <Typography variant="body2" color="text.secondary" fontWeight={600} noWrap gutterBottom>
-        Saison: {data.season}
-        </Typography>
-        <Typography variant="h6" fontWeight={600} noWrap gutterBottom>
+        <Typography 
+          variant={isMobile ? "body2" : "body1"} 
+          fontWeight={700} 
+          noWrap 
+          gutterBottom
+          sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}
+        >
           {data.name}
         </Typography>
-
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            minHeight: "3em",
-          }}
+        <Typography 
+          variant={isMobile ? "h6" : "h5"} 
+          color="primary" 
+          fontWeight={700}
+          sx={{ fontSize: { xs: '1.1rem', md: '1.25rem' } }}
         >
-          {data.description}
+          {getRegionalPrice(data, userRegion)} €
         </Typography>
       </Box>
 
-      {/* Price + Cart + Message */}
-      <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 2, px: 1 }}>
-        <Box>
-          {data.isPromotion && data.promotionDiscount ? (
-            <Box>
-              <Typography 
-                variant="body2" 
-                color="text.secondary" 
-                sx={{ textDecoration: 'line-through' }}
-              >
-                {data.price} €
-              </Typography>
-              <Typography variant="h6" fontWeight="bold" color="error">
-                {Math.round(data.price * (1 - data.promotionDiscount / 100))} €
-              </Typography>
-            </Box>
-          ) : (
-            <Typography variant="h6" fontWeight="bold" color="primary">
-              {data.price} €
-            </Typography>
-          )}
-        </Box>
-
-        <TextField
-          type="number"
-          size="small"
-          value={quantity}
-          inputProps={{ min: 1, style: { width: 50, textAlign: 'center' } }}
-          onChange={e => {
-            let val = parseInt(e.target.value, 10);
-            if (isNaN(val) || val < 1) val = 1;
-            setQuantity(val);
-          }}
-          sx={{ mr: 1, background: '#fff', borderRadius: 1 }}
-          label="Qté"
-        />
-
+      {/* Add to Cart Section */}
+      <Box sx={{ mt: "auto", pt: { xs: 1, md: 2 } }}>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <TextField
+            type="number"
+            size={isMobile ? "small" : "medium"}
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            placeholder="Qté"
+            inputProps={{ 
+              min: 1, 
+              style: { 
+                width: isMobile ? 40 : 50, 
+                textAlign: 'center',
+                fontSize: { xs: '0.8rem', md: '0.875rem' }
+              } 
+            }}
+            sx={{ 
+              flex: 1,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+              }
+            }}
+          />
+          <Tooltip title="Ajouter au panier">
+            <IconButton
+              onClick={handleAddToCart}
+              color="primary"
+              size={isMobile ? "small" : "medium"}
+              sx={{
+                backgroundColor: 'primary.main',
+                color: 'white',
+                '&:hover': {
+                  backgroundColor: 'primary.dark',
+                },
+              }}
+            >
+              <ShoppingCartIcon />
+            </IconButton>
+          </Tooltip>
+        </Stack>
+        
         {showMessage && (
-          <Typography variant="body2" color="success.main" sx={{ fontSize: "0.75rem", mx: 1 }}>
-            Ajouté avec succès
+          <Typography 
+            variant={isMobile ? "caption" : "body2"} 
+            color="success.main" 
+            textAlign="center" 
+            sx={{ 
+              mt: 1, 
+              fontWeight: 500,
+              animation: 'fadeIn 0.5s ease-in-out'
+            }}
+          >
+            Ajouté au panier !
           </Typography>
         )}
-
-        <Tooltip title="Ajouter au panier">
-          <IconButton color="primary" onClick={handleAddToCart}>
-            <ShoppingCartIcon />
-          </IconButton>
-        </Tooltip>
-      </Stack>
+      </Box>
     </Card>
   );
 }
