@@ -18,6 +18,7 @@ import {
   ListItem,
   ListItemText,
 } from "@mui/material";
+import logo from "/logo.jpeg";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -70,11 +71,21 @@ const Navbar = () => {
           <Box sx={{ 
             width: isMobile ? "auto" : "33%", 
             textAlign: "center",
-            flex: isMobile ? 1 : "none"
+            flex: isMobile ? 1 : "none",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
           }}>
-            <Typography variant="h5" sx={{ fontWeight: "bold", color: "black", fontFamily: "serif" }}>
-              FitPneus
-            </Typography>
+            <img 
+              src={logo} 
+              alt="FitPneus Logo" 
+              style={{ 
+                height: "100px", 
+                width: "auto",
+                cursor: "pointer"
+              }}
+              onClick={() => navigate("/")}
+            />
           </Box>
           
           <Box sx={{ 
@@ -138,18 +149,45 @@ const Navbar = () => {
         anchor="left"
         open={mobileMenuOpen}
         onClose={handleMobileMenuToggle}
+        sx={{
+          '& .MuiDrawer-paper': {
+            backgroundColor: 'white',
+            color: 'black',
+          }
+        }}
       >
-        <Box sx={{ width: 250, pt: 2 }}>
-          <List>
+        <Box sx={{ 
+          width: 250, 
+          pt: 2, 
+          backgroundColor: 'white',
+          minHeight: '100vh'
+        }}>
+          <List sx={{ backgroundColor: 'white' }}>
             {categoryButtons.map((button) => (
               <ListItem 
                 key={button.path}
-                button 
+                component="button"
                 onClick={() => handleMobileNavigation(button.path)}
+                sx={{
+                  color: 'black',
+                  backgroundColor: 'white',
+                  borderBottom: '1px solid #e0e0e0',
+                  '&:hover': {
+                    backgroundColor: '#f5f5f5',
+                  },
+                  '&:last-child': {
+                    borderBottom: 'none'
+                  }
+                }}
               >
                 <ListItemText 
                   primary={button.label}
-                  sx={{ textAlign: "center", fontWeight: "bold" }}
+                  sx={{ 
+                    textAlign: "center", 
+                    fontWeight: "bold",
+                    color: 'black',
+                    fontSize: '1.1rem'
+                  }}
                 />
               </ListItem>
             ))}
@@ -168,7 +206,7 @@ const Navbar = () => {
                 onClick={() => navigate(button.path)}
                 sx={{
                   color: "black",
-                  borderColor: "black",
+                  borderColor: "white",
                   fontSize: "1.2rem",
                   px: 4,
                   py: 1.5,

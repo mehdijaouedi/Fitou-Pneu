@@ -47,6 +47,7 @@ function CartPage() {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(null);
   const [success, setSuccess] = React.useState(false);
+  const [finalTotal, setFinalTotal] = React.useState(0);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const isSmallMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -125,6 +126,8 @@ function CartPage() {
         throw new Error(errorData.error || 'Échec de la synchronisation de la vente vers Sanity');
       }
 
+      const finalTotal = calculateTotal(); // Store the total before clearing cart
+      setFinalTotal(finalTotal); // Store the final total in state
       clearCart(); // Clear cart immediately after successful order
       setSuccess(true);
       setOpenDialog(true);
@@ -414,7 +417,7 @@ function CartPage() {
               variant={isMobile ? "h6" : "h5"} 
               sx={{ mb: 2, color: 'primary.main' }}
             >
-              Total de la Commande: {total} €
+              Total de la Commande: {finalTotal} €
             </Typography>
             <Typography 
               variant={isMobile ? "body2" : "body1"} 
