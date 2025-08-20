@@ -25,9 +25,9 @@ const getRegionalPrice = (product, userRegion = 'Nord France') => {
   
   // For jentes and mixtes
   if (userRegion === 'Sud France') {
-    return product.sudPrice || product.price || product.sellingPrice;
+    return product.sudPrice || product.price || product.sellingPrice || product.sellPrice || 0;
   } else {
-    return product.nordPrice || product.price || product.sellingPrice;
+    return product.nordPrice || product.price || product.sellingPrice || product.sellPrice || 0;
   }
 };
 

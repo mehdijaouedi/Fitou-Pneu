@@ -82,7 +82,7 @@ function ProductDetails() {
           name,
           brand,
           model,
-          size,
+          "size": size->title,
           liSi,
           soundClass,
           soundDb,
