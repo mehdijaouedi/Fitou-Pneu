@@ -59,7 +59,7 @@ const PneusPage = () => {
             ean,
             sap,
             itemNo,
-            size,
+            "size": size->title,
             liSi,
             extra,
             pattern,

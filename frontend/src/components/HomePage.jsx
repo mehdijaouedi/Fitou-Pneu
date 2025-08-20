@@ -42,7 +42,7 @@ const HomePage = () => {
             *[_type == "pneu" && isPromotion == true] | order(dateAdded desc){
               _id,
               name,
-              price,
+              sellPrice,
               nordPrice,
               sudPrice,
               sellingPrice,
@@ -132,7 +132,9 @@ const HomePage = () => {
               // For jentes and mixtes
               return {
                 ...product,
-                price: userRegion === 'Sud France' ? (product.sudPrice || product.price || product.sellingPrice) : (product.nordPrice || product.price || product.sellingPrice)
+                price: userRegion === 'Sud France' 
+                  ? (product.sudPrice || product.sellPrice || product.sellingPrice || product.sellPrice || 0) 
+                  : (product.nordPrice || product.sellPrice || product.sellingPrice || product.sellPrice || 0)
               };
             }
           });

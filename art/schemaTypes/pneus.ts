@@ -53,49 +53,19 @@ const pneu = defineType({
     {
       name: 'size',
       title: 'SIZE',
-      type: 'string',
+      type: 'reference',
+      to: [{ type: 'tireSize' }],
       options: {
-        list: [
-          { title: '155/70R12', value: '155/70R12' },
-          { title: '145/80R12', value: '145/80R12' },
-          { title: '155/80R12', value: '155/80R12' },
-          { title: '165/70R12', value: '165/70R12' },
-          { title: '175/70R12', value: '175/70R12' },
-          { title: '145/80R13', value: '145/80R13' },
-          { title: '155/80R13', value: '155/80R13' },
-          { title: '165/80R13', value: '165/80R13' },
-          { title: '175/80R13', value: '175/80R13' },
-          { title: '185/80R13', value: '185/80R13' },
-          { title: '155/70R13', value: '155/70R13' },
-          { title: '165/70R13', value: '165/70R13' },
-          { title: '175/70R13', value: '175/70R13' },
-          { title: '185/70R13', value: '185/70R13' },
-          { title: '195/70R13', value: '195/70R13' },
-          { title: '205/70R13', value: '205/70R13' },
-          { title: '165/65R14', value: '165/65R14' }
-        ]
-      }
+        disableNew: false,
+      },
+      description: 'Choose a size or create a new size document',
     },
     {
       name: 'liSi',
       title: 'LI/SI',
       type: 'string'
     },
-    {
-      name: 'extra',
-      title: 'Extra',
-      type: 'string'
-    },
-    {
-      name: 'pattern',
-      title: 'Pattern',
-      type: 'string',
-      options: {
-        list: [
-          { title: 'BLAZER HP', value: 'BLAZER HP' }
-        ]
-      }
-    },
+        
     {
       name: 'eprelCode',
       title: 'EPREL CODE',
@@ -121,11 +91,7 @@ const pneu = defineType({
       title: 'SOUND DB',
       type: 'number'
     },
-    {
-      name: 'cat',
-      title: 'CAT',
-      type: 'string'
-    },
+    
     {
       name: 'season',
       title: 'Season',
@@ -156,6 +122,12 @@ const pneu = defineType({
       title: 'Sell Price (€)',
       type: 'number'
     },
+    {
+      name: 'sellPriceNord',
+      title: 'Sell Price Nord (€)',
+      type: 'number',
+      description: 'Selling price for the Nord region'
+    },
     
     // Promotion field
     {
@@ -182,13 +154,15 @@ const pneu = defineType({
     select: { 
       title: 'name',
       subtitle: 'brand',
-      size: 'size',
-      sellPrice: 'sellPrice'
+      sizeTitle: 'size.title',
+      sellPrice: 'sellPrice',
+      sellPriceNord: 'sellPriceNord'
     },
-    prepare({ title, subtitle, size, sellPrice }) {
+    prepare({ title, subtitle, sizeTitle, sellPrice, sellPriceNord }) {
+      const priceInfo = sellPriceNord ? `€${sellPrice || 0} / Nord: €${sellPriceNord}` : `€${sellPrice || 0}`;
       return { 
         title: title || 'New Pneu',
-        subtitle: `${subtitle || ''} ${size || ''} - €${sellPrice || 0}`
+        subtitle: `${subtitle || ''} ${sizeTitle || ''} - ${priceInfo}`
       };
     },
   },

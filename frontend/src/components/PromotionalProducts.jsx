@@ -94,7 +94,9 @@ const PromotionalProducts = () => {
             // For jentes and mixtes
             return {
               ...product,
-              price: userRegion === 'Sud France' ? (product.sudPrice || product.price || product.sellingPrice) : (product.nordPrice || product.price || product.sellingPrice)
+              price: userRegion === 'Sud France' 
+                ? (product.sudPrice || product.price || product.sellingPrice || product.sellPrice || 0) 
+                : (product.nordPrice || product.price || product.sellingPrice || product.sellPrice || 0)
             };
           }
         };
