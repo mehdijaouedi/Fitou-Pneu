@@ -20,16 +20,32 @@ model Utilisateur {
   sales           Sale[]
 }
 
+model Client {
+  id              String  @id @default(uuid())
+  prenom          String
+  nom             String
+  email           String  @unique
+  adresse         String
+  numeroTelephone String
+  pays            String
+  region          String  @default("Nord France")
+  sales           Sale[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
 model Sale {
   id            String      @id @default(uuid())
   utilisateur   Utilisateur? @relation(fields: [utilisateurId], references: [id])
   utilisateurId String?
+  client        Client?     @relation(fields: [clientId], references: [id])
+  clientId      String?
   date          DateTime    @default(now())
   saleType      String
   status        String      @default("pending")
   grandTotal    Float
   products      Json
-  clientEmail   String
+  clientEmail   String?     // Keep for backward compatibility
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 }

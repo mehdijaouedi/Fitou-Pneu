@@ -3,6 +3,39 @@ import sanityClient from '../config/sanity';
 
 const prisma = new PrismaClient();
 
+// Helper function to ensure client exists in Sanity
+async function ensureClientInSanity(client: any) {
+  try {
+    // Check if client already exists in Sanity
+    const existingClient = await sanityClient.fetch(
+      `*[_type == "client" && email == $email][0]`,
+      { email: client.email }
+    );
+
+    if (existingClient) {
+      return existingClient;
+    }
+
+    // Create new client in Sanity
+    const sanityClientDoc = await sanityClient.create({
+      _type: 'client',
+      prenom: client.prenom,
+      nom: client.nom,
+      email: client.email,
+      adresse: client.adresse,
+      numeroTelephone: client.numeroTelephone,
+      pays: client.pays,
+      region: client.region,
+      dbId: client.id
+    });
+
+    return sanityClientDoc;
+  } catch (error) {
+    console.error('Error ensuring client in Sanity:', error);
+    return null;
+  }
+}
+
 interface SanitySaleData {
   _type: string;
   date: string;
@@ -20,11 +53,12 @@ interface SanitySaleData {
 
 export async function syncSaleToSanity(saleId: string) {
   try {
-    // Get the sale from Prisma with user details
+    // Get the sale from Prisma with user and client details
     const sale = await prisma.sale.findUnique({
       where: { id: saleId },
       include: {
         utilisateur: true,
+        client: true,
       }
     });
 
@@ -41,7 +75,7 @@ export async function syncSaleToSanity(saleId: string) {
     const saleData: SanitySaleData = {
       _type: 'sale',
       date: sale.date.toISOString(),
-      clientEmail: sale.clientEmail,
+      clientEmail: sale.clientEmail || '',
       saleType: sale.saleType,
       products: sale.products,
       grandTotal: sale.grandTotal,
@@ -49,8 +83,18 @@ export async function syncSaleToSanity(saleId: string) {
       dbId: sale.id
     };
 
-    // Add client reference if it's a registered user
-    if (sale.utilisateur) {
+    // Add client reference - prioritize direct client relationship
+    if (sale.client) {
+      // First, ensure the client exists in Sanity
+      const sanityClientDoc = await ensureClientInSanity(sale.client);
+      if (sanityClientDoc) {
+        saleData.client = {
+          _type: 'reference',
+          _ref: sanityClientDoc._id
+        };
+      }
+    } else if (sale.utilisateur) {
+      // Fallback to registered user
       saleData.client = {
         _type: 'reference',
         _ref: sale.utilisateurId
@@ -90,11 +134,12 @@ export async function syncSaleToSanity(saleId: string) {
 
 export async function updateSaleInSanity(saleId: string) {
   try {
-    // Get the sale from Prisma with user details
+    // Get the sale from Prisma with user and client details
     const sale = await prisma.sale.findUnique({
       where: { id: saleId },
       include: {
         utilisateur: true,
+        client: true,
       },
     });
 
@@ -104,7 +149,7 @@ export async function updateSaleInSanity(saleId: string) {
 
     // Find the existing Sanity document
     const existingSale = await sanityClient.fetch(
-      `*[_type == "sale" && _id == $saleId][0]`,
+      `*[_type == "sale" && dbId == $saleId][0]`,
       { saleId }
     );
 
@@ -112,21 +157,40 @@ export async function updateSaleInSanity(saleId: string) {
       return syncSaleToSanity(saleId);
     }
 
+    // Prepare client reference
+    let clientRef = null;
+    if (sale.client) {
+      const sanityClientDoc = await ensureClientInSanity(sale.client);
+      if (sanityClientDoc) {
+        clientRef = {
+          _type: 'reference',
+          _ref: sanityClientDoc._id,
+        };
+      }
+    } else if (sale.utilisateur) {
+      clientRef = {
+        _type: 'reference',
+        _ref: sale.utilisateurId,
+      };
+    }
+
     // Update the sale document in Sanity
+    const updateData: any = {
+      date: sale.date.toISOString(),
+      clientEmail: sale.clientEmail || '',
+      saleType: sale.saleType,
+      products: sale.products,
+      grandTotal: sale.grandTotal,
+      status: sale.status,
+    };
+
+    if (clientRef) {
+      updateData.client = clientRef;
+    }
+
     const sanitySale = await sanityClient
       .patch(existingSale._id)
-      .set({
-        date: sale.date.toISOString(),
-        client: {
-          _type: 'reference',
-          _ref: sale.utilisateurId,
-        },
-        clientEmail: sale.utilisateur.email,
-        saleType: sale.saleType,
-        products: sale.products,
-        grandTotal: sale.grandTotal,
-        status: sale.status,
-      })
+      .set(updateData)
       .commit();
 
     return sanitySale;
