@@ -18,7 +18,7 @@ const JentesPage = () => {
   const navigate = useNavigate();
 
   return (
-    <Container maxWidth="lg" sx={{ py: 8 }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 1, md: 2 } }}>
       <Box sx={{ textAlign: "center" }}>
         {/* Header */}
         <Box sx={{ mb: 6 }}>

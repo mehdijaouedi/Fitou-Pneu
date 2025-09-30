@@ -101,7 +101,7 @@ const ContactPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 1, md: 2 } }}>
       {/* Header */}
       <Box sx={{ mb: { xs: 3, md: 6 }, textAlign: "center" }}>
         <Typography 
@@ -179,8 +179,8 @@ const ContactPage = () => {
                     variant={isMobile ? "body2" : "body1"} 
                     color="text.secondary"
                   >
-                    123 Rue de la Paix<br />
-                    75001 Paris, France
+                    10 Avenue des chenes<br />
+                    Cagnes sur mer 06800, France
                   </Typography>
                 </Box>
               </Box>

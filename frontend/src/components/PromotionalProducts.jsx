@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import PneuCard from "./PneuCard";
 import sanityClient from "../../sanity/client";
 import { useAuth } from "../context/AuthContext";
+import { applyRegionalPricingToProducts } from "../../utils/myUtils";
 
 const PromotionalProducts = () => {
   const [promotionalProducts, setPromotionalProducts] = useState({
@@ -34,6 +35,8 @@ const PromotionalProducts = () => {
               _id,
               name,
               price,
+              sellPriceNord,
+              sellPriceSud,
               nordPrice,
               sudPrice,
               sellingPrice,
@@ -42,7 +45,16 @@ const PromotionalProducts = () => {
               quantity,
               type,
               season,
-              sizes,
+              sizes[]{
+                _id,
+                size,
+                price,
+                sellPriceNord,
+                sellPriceSud,
+                nordPrice,
+                sudPrice,
+                stock
+              },
               isPromotion,
               promotionDiscount,
               images[]->{ 
@@ -58,6 +70,8 @@ const PromotionalProducts = () => {
               _id,
               name,
               price,
+              sellPriceNord,
+              sellPriceSud,
               nordPrice,
               sudPrice,
               sellingPrice,
@@ -78,32 +92,9 @@ const PromotionalProducts = () => {
         ]);
 
         // Apply regional pricing to products
-        const applyRegionalPricing = (product) => {
-          if (!product) return null;
-          
-          if (product.sizes && Array.isArray(product.sizes)) {
-            // For pneus with sizes
-            return {
-              ...product,
-              sizes: product.sizes.map(size => ({
-                ...size,
-                price: userRegion === 'Sud France' ? (size.sudPrice || size.price) : (size.nordPrice || size.price)
-              }))
-            };
-          } else {
-            // For jentes and mixtes
-            return {
-              ...product,
-              price: userRegion === 'Sud France' 
-                ? (product.sudPrice || product.price || product.sellingPrice || product.sellPrice || 0) 
-                : (product.nordPrice || product.price || product.sellingPrice || product.sellPrice || 0)
-            };
-          }
-        };
-
         setPromotionalProducts({
-          pneus: applyRegionalPricing(pneusData),
-          jentes: applyRegionalPricing(jentesData),
+          pneus: pneusData ? applyRegionalPricingToProducts([pneusData], userRegion)[0] : null,
+          jentes: jentesData ? applyRegionalPricingToProducts([jentesData], userRegion)[0] : null,
         });
       } catch (error) {
         console.error("Error fetching promotional products:", error);

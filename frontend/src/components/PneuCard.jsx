@@ -8,7 +8,7 @@ import { getRegionalPrice } from "../../utils/myUtils";
 
 function PneuCard({ data, productCategory }) {
   const [showMessage, setShowMessage] = useState(false);
-  const [quantity, setQuantity] = useState('');
+  const [quantity, setQuantity] = useState('1');
   const navigate = useNavigate();
   const { isAuthenticated, openLoginModal, user } = useAuth(); // Added user
   const { addToCart } = useCart();
@@ -40,7 +40,7 @@ function PneuCard({ data, productCategory }) {
   };
   const productImage = data?.images?.[0]?.path
     ? data.images[0].path
-    : "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjmvwItjeJ4l4wDoieU_TTjdoYuhTr5FBpJA&s";
+    : "/pneus.jpeg";
 
   return (
     <Card
@@ -107,15 +107,6 @@ function PneuCard({ data, productCategory }) {
       {/* Product Info */}
       <Box sx={{ textAlign: "center", px: { xs: 0.5, md: 1 }, cursor: "pointer" }} onClick={() => handleProductClick(data._id)}>
         <Typography 
-          variant={isMobile ? "caption" : "body2"} 
-          color="text.secondary" 
-          fontWeight={600} 
-          noWrap 
-          gutterBottom
-        >
-          Type: {data.type}
-        </Typography>
-        <Typography 
           variant={isMobile ? "body2" : "body1"} 
           fontWeight={700} 
           noWrap 
@@ -123,6 +114,15 @@ function PneuCard({ data, productCategory }) {
           sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}
         >
           {data.name}
+        </Typography>
+        <Typography 
+          variant={isMobile ? "caption" : "body2"} 
+          color="text.secondary" 
+          fontWeight={600} 
+          noWrap 
+          gutterBottom
+        >
+          {data.size}
         </Typography>
         <Typography 
           variant={isMobile ? "h6" : "h5"} 
