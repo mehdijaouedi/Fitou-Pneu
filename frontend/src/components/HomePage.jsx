@@ -16,6 +16,7 @@ import { useNavigate } from "react-router-dom";
 import PneuCard from "./PneuCard";
 import sanityClient from "../../sanity/client";
 import { useAuth } from "../context/AuthContext";
+import { applyRegionalPricingToProducts } from "../../utils/myUtils";
 
 const HomePage = () => {
   const [promotionalProducts, setPromotionalProducts] = useState({
@@ -43,17 +44,28 @@ const HomePage = () => {
               _id,
               name,
               sellPrice,
-              nordPrice,
-              sudPrice,
+              sellPriceNord,
+              sellPriceSud,
               sellingPrice,
               description,
               dateAdded,
               quantity,
               type,
               season,
-              sizes,
               isPromotion,
               promotionDiscount,
+              promotionPriceNord,
+              promotionPriceSud,
+              sizes[]{
+                _id,
+                size,
+                price,
+                sellPriceNord,
+                sellPriceSud,
+                nordPrice,
+                sudPrice,
+                stock
+              },
               images[]->{ 
                 _id,
                 path,
@@ -67,6 +79,8 @@ const HomePage = () => {
               _id,
               name,
               price,
+              sellPriceNord,
+              sellPriceSud,
               nordPrice,
               sudPrice,
               sellingPrice,
@@ -88,6 +102,8 @@ const HomePage = () => {
               _id,
               name,
               price,
+              sellPriceNord,
+              sellPriceSud,
               nordPrice,
               sudPrice,
               sellingPrice,
@@ -117,33 +133,10 @@ const HomePage = () => {
         ]);
 
         // Apply regional pricing to products
-        const applyRegionalPricing = (products) => {
-          return products.map(product => {
-            if (product.sizes && Array.isArray(product.sizes)) {
-              // For pneus with sizes
-              return {
-                ...product,
-                sizes: product.sizes.map(size => ({
-                  ...size,
-                  price: userRegion === 'Sud France' ? (size.sudPrice || size.price) : (size.nordPrice || size.price)
-                }))
-              };
-            } else {
-              // For jentes and mixtes
-              return {
-                ...product,
-                price: userRegion === 'Sud France' 
-                  ? (product.sudPrice || product.sellPrice || product.sellingPrice || product.sellPrice || 0) 
-                  : (product.nordPrice || product.sellPrice || product.sellingPrice || product.sellPrice || 0)
-              };
-            }
-          });
-        };
-
         setPromotionalProducts({
-          pneus: applyRegionalPricing(pneusData),
-          jentes: applyRegionalPricing(jentesData),
-          mixt: applyRegionalPricing(mixtData),
+          pneus: applyRegionalPricingToProducts(pneusData, userRegion),
+          jentes: applyRegionalPricingToProducts(jentesData, userRegion),
+          mixt: applyRegionalPricingToProducts(mixtData, userRegion),
         });
 
         // Set dynamic content
@@ -265,7 +258,7 @@ const HomePage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 1, md: 2 } }}>
       {/* Hero Section */}
       <Box sx={{ mb: { xs: 3, md: 6 }, textAlign: "center" }}>
         <Typography 
@@ -280,6 +273,65 @@ const HomePage = () => {
         >
           Découvrez nos meilleures offres sur les pneus et les jantes !
         </Typography>
+      </Box>
+
+      {/* Grocer/Wholesaler Section */}
+      <Box sx={{ mb: { xs: 3, md: 6 }, textAlign: "center" }}>
+        <Paper
+          elevation={2}
+          sx={{
+            p: { xs: 2, md: 4 },
+            backgroundColor: "#f8f9fa",
+            borderRadius: 3,
+            border: "2px solid #e3f2fd",
+          }}
+        >
+          <Typography 
+            variant={isMobile ? "h5" : "h4"} 
+            sx={{ fontWeight: "bold", mb: { xs: 1, md: 2 }, color: "#1976d2" }}
+          >
+            🏪 Nous travaillons avec les grossistes
+          </Typography>
+          <Typography 
+            variant={isMobile ? "body2" : "body1"} 
+            sx={{ 
+              color: "text.secondary", 
+              fontSize: { xs: "0.9rem", md: "1.1rem" },
+              lineHeight: 1.6,
+              maxWidth: "800px",
+              mx: "auto"
+            }}
+          >
+            FitPneu est votre partenaire de confiance pour tous vos besoins en pneus et jantes. 
+            Nous proposons des tarifs préférentiels et des conditions spéciales pour les grossistes et revendeurs professionnels.
+          </Typography>
+          <Box sx={{ mt: { xs: 2, md: 3 }, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 2 }}>
+            <Chip 
+              label="Tarifs Grossiste" 
+              color="primary" 
+              variant="outlined"
+              sx={{ fontWeight: 600 }}
+            />
+            <Chip 
+              label="Conditions Spéciales" 
+              color="primary" 
+              variant="outlined"
+              sx={{ fontWeight: 600 }}
+            />
+            <Chip 
+              label="Livraison Rapide" 
+              color="primary" 
+              variant="outlined"
+              sx={{ fontWeight: 600 }}
+            />
+            <Chip 
+              label="Support Professionnel" 
+              color="primary" 
+              variant="outlined"
+              sx={{ fontWeight: 600 }}
+            />
+          </Box>
+        </Paper>
       </Box>
 
       {/* Dynamic Content Box */}

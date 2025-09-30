@@ -17,11 +17,13 @@ import {
   List,
   ListItem,
   ListItemText,
+  Chip,
 } from "@mui/material";
 import logo from "/logo.jpeg";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import MenuIcon from "@mui/icons-material/Menu";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -92,8 +94,26 @@ const Navbar = () => {
             width: isMobile ? "auto" : "33%", 
             display: "flex", 
             justifyContent: "flex-end", 
-            gap: 1 
+            gap: 1,
+            alignItems: "center"
           }}>
+            {/* Region Indicator */}
+            {isAuthenticated && user?.region && (
+              <Chip
+                icon={<LocationOnIcon />}
+                label={user.region}
+                size="small"
+                variant="outlined"
+                sx={{ 
+                  fontSize: '0.75rem',
+                  height: '28px',
+                  '& .MuiChip-icon': {
+                    fontSize: '0.875rem'
+                  }
+                }}
+              />
+            )}
+            
             <IconButton sx={{ color: "black" }} onClick={() => navigate("/cart")}>
               <Badge color="secondary">
                 <ShoppingCartIcon />
@@ -197,7 +217,7 @@ const Navbar = () => {
 
       {/* Category Buttons - Desktop Only */}
       {!isMobile && (
-        <Box sx={{ backgroundColor: "white", py: 4 }}>
+        <Box sx={{ backgroundColor: "white", py: 1 }}>
           <Stack direction="row" justifyContent="center" spacing={6}>
             {categoryButtons.map((button) => (
               <Button

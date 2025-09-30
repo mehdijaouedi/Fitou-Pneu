@@ -13,7 +13,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import PneuCard from "./PneuCard";
 import PromotionalProducts from "./PromotionalProducts";
 import sanityClient from "../../sanity/client";
-import { selctCategory, getRegionalPrice } from "../../utils/myUtils";
+import { selctCategory, applyRegionalPricingToProducts } from "../../utils/myUtils";
 import { useAuth } from "../context/AuthContext";
 
 const HomeSection = () => {
@@ -36,15 +36,27 @@ const HomeSection = () => {
             _id,
             name,
             price,
+            sellPriceNord,
+            sellPriceSud,
             nordPrice,
             sudPrice,
             sellingPrice,
+            sellPrice,
             description,
             dateAdded,
             quantity,
             type,
             season,
-            sizes,
+            sizes[]{
+              _id,
+              size,
+              price,
+              sellPriceNord,
+              sellPriceSud,
+              nordPrice,
+              sudPrice,
+              stock
+            },
             isPromotion,
             promotionDiscount,
             images[]->{ 
@@ -57,26 +69,7 @@ const HomeSection = () => {
         `);
         
         // Apply regional pricing to products
-        const productsWithRegionalPricing = data.map(product => {
-          if (product.sizes && Array.isArray(product.sizes)) {
-            // For pneus with sizes
-            return {
-              ...product,
-              sizes: product.sizes.map(size => ({
-                ...size,
-                price: userRegion === 'Sud France' ? (size.sudPrice || size.price) : (size.nordPrice || size.price)
-              }))
-            };
-          } else {
-            // For jentes and mixtes
-            return {
-              ...product,
-              price: userRegion === 'Sud France' 
-                ? (product.sudPrice || product.price || product.sellingPrice || product.sellPrice || 0) 
-                : (product.nordPrice || product.price || product.sellingPrice || product.sellPrice || 0)
-            };
-          }
-        });
+        const productsWithRegionalPricing = applyRegionalPricingToProducts(data, userRegion);
         
         setProducts(productsWithRegionalPricing);
         console.log("Fetched products with regional pricing: ", productsWithRegionalPricing);

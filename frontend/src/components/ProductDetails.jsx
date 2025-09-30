@@ -29,13 +29,12 @@ import {
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import { selctCategory } from '../../utils/myUtils';
+import { selctCategory, getRegionalPrice, applyRegionalPricing } from '../../utils/myUtils';
 import sanityClient from '../../sanity/client';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../store/slice/CartContext';
-import { getRegionalPrice, getRegionalPriceForSize } from '../../utils/myUtils';
 
-const FALLBACK_IMAGE_URL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTjmvwItjeJ4l4wDoieU_TTjdoYuhTr5FBpJA&s";
+const FALLBACK_IMAGE_URL = "/pneus.jpeg";
 
 function ProductDetails() {
   const { productCategory, productId } = useParams();
@@ -62,7 +61,7 @@ function ProductDetails() {
     const itemToAdd = {
       id: product._id,
       name: product.name,
-      price: product.sellPrice,
+      price: getRegionalPrice(product, userRegion),
       type: 'pneu',
       size: product.size
     };
@@ -87,12 +86,32 @@ function ProductDetails() {
           soundClass,
           soundDb,
           sellPrice,
-          isPromotion
+          sellPriceNord,
+          sellPriceSud,
+          nordPrice,
+          sudPrice,
+          isPromotion,
+          promotionDiscount,
+          promotionPriceNord,
+          promotionPriceSud,
+          sizes[]{
+            _id,
+            size,
+            price,
+            sellPriceNord,
+            sellPriceSud,
+            nordPrice,
+            sudPrice,
+            stock
+          }
         }`;
 
         const productData = await sanityClient.fetch(query);
         
-        setProduct(productData);
+        // Apply regional pricing
+        const productWithRegionalPricing = applyRegionalPricing(productData, userRegion);
+        
+        setProduct(productWithRegionalPricing);
         setLoading(false);
       } catch (err) {
         console.error("Error fetching product details:", err);
@@ -102,7 +121,7 @@ function ProductDetails() {
     };
 
     fetchProductDetails();
-  }, [productId]);
+  }, [productId, userRegion]);
 
   const renderSpecifications = () => {
     if (!product) return null;
@@ -170,7 +189,7 @@ function ProductDetails() {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 1, md: 2 } }}>
       <Card sx={{ 
         overflow: 'hidden',
         boxShadow: 3,
@@ -184,7 +203,7 @@ function ProductDetails() {
           <Grid item xs={12} md={5}>
             <CardMedia
               component="img"
-              image={FALLBACK_IMAGE_URL}
+              image={product?.images?.[0]?.path || FALLBACK_IMAGE_URL}
               alt={product.name || 'Image du produit'}
               sx={{
                 height: { xs: 200, sm: 300, md: 400 },
@@ -215,7 +234,7 @@ function ProductDetails() {
                 color="primary.main" 
                 sx={{ my: 1.5, fontWeight: 700 }}
               >
-                {product.sellPrice ? `${product.sellPrice.toFixed(2)} €` : 'Prix non disponible'}
+                {getRegionalPrice(product, userRegion) ? `${getRegionalPrice(product, userRegion).toFixed(2)} €` : 'Prix non disponible'}
               </Typography>
 
               {product.size && (

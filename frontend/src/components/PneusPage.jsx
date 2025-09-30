@@ -26,6 +26,7 @@ import { useNavigate } from "react-router-dom";
 import PneuCard from "./PneuCard";
 import sanityClient from "../../sanity/client";
 import { useAuth } from "../context/AuthContext";
+import { applyRegionalPricingToProducts } from "../../utils/myUtils";
 
 const PneusPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -71,28 +72,50 @@ const PneusPage = () => {
             cat,
             season,
             qty40hc,
-            buyPrice,
+            sellPriceNord,
+            sellPriceSud,
             sellPrice,
             isPromotion,
+            promotionDiscount,
+            promotionPriceNord,
+            promotionPriceSud,
             dateAdded,
             lastUpdated,
-            excelFile
+            excelFile,
+            sizes[]{
+              _id,
+              size,
+              price,
+              sellPriceNord,
+              sellPriceSud,
+              nordPrice,
+              sudPrice,
+              stock
+            },
+            images[]->{ 
+              _id,
+              path,
+              dbId,
+              url
+            }
           }
         `);
         
+        // Debug: Check if promotional products are being fetched correctly
+        const promotionalProducts = data.filter(p => p.isPromotion);
+        console.log('Promotional products found:', promotionalProducts.length);
+        if (promotionalProducts.length > 0) {
+          console.log('First promotional product:', promotionalProducts[0]);
+        }
+        
         // Apply regional pricing to products
-        const productsWithRegionalPricing = data.map(product => {
-          // Use sellPrice as the main price, with regional variations if available
-          const basePrice = product.sellPrice || product.buyPrice || 0;
-          
-          return {
-            ...product,
-            price: basePrice,
-            nordPrice: basePrice,
-            sudPrice: basePrice,
-            sellingPrice: basePrice
-          };
-        });
+        const productsWithRegionalPricing = applyRegionalPricingToProducts(data, userRegion);
+        
+        // Debug: Check if pricing is applied correctly
+        const promotionalWithPricing = productsWithRegionalPricing.filter(p => p.isPromotion);
+        if (promotionalWithPricing.length > 0) {
+          console.log('First promotional product with pricing:', promotionalWithPricing[0]);
+        }
         
         setProducts(productsWithRegionalPricing);
         setFilteredProducts(productsWithRegionalPricing);
@@ -334,7 +357,7 @@ const PneusPage = () => {
   const uniqueSeasons = [...new Set(products.map(product => product.season).filter(Boolean))];
 
   return (
-    <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+    <Container maxWidth="lg" sx={{ py: { xs: 1, md: 2 } }}>
       {/* Header */}
       <Box sx={{ mb: { xs: 2, md: 4 }, textAlign: "center" }}>
         <Typography 

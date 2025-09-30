@@ -118,7 +118,7 @@ const Footer = () => {
                   variant={isMobile ? "body2" : "body1"} 
                   color="#b0b0b0"
                 >
-                  123 Rue Principale, Tunis, Tunisie
+                  10 Avenue des chenes, Cagnes sur mer 06800, France
                 </Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
