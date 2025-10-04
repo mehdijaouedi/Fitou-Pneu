@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { useCart } from "../store/slice/CartContext";
 import { getRegionalPrice } from "../../utils/myUtils";
 
-function PneuCard({ data, productCategory }) {
+function PneuCard({ data, productCategory, showSizes = false }) {
   const [showMessage, setShowMessage] = useState(false);
   const [quantity, setQuantity] = useState('1');
   const navigate = useNavigate();
@@ -115,15 +115,98 @@ function PneuCard({ data, productCategory }) {
         >
           {data.name}
         </Typography>
-        <Typography 
-          variant={isMobile ? "caption" : "body2"} 
-          color="text.secondary" 
-          fontWeight={600} 
-          noWrap 
-          gutterBottom
-        >
-          {data.size}
-        </Typography>
+        
+        {/* Display sizes for all tire products */}
+        {productCategory === "pneus" && (
+          <Box sx={{ mb: 1 }}>
+            {data.sizes && data.sizes.length > 1 ? (
+              <>
+                <Typography 
+                  variant={isMobile ? "caption" : "body2"} 
+                  fontWeight={600} 
+                  gutterBottom
+                  sx={{ color: "text.secondary", display: "block", textAlign: "center" }}
+                >
+                  Tailles disponibles:
+                </Typography>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, justifyContent: "center" }}>
+                  {data.sizes.slice(0, showSizes ? 5 : 3).map((size, index) => (
+                    <Chip
+                      key={index}
+                      label={size.size}
+                      size="small"
+                      sx={{
+                        fontSize: isMobile ? "0.7rem" : "0.75rem",
+                        height: isMobile ? 20 : 24,
+                        backgroundColor: size.stock > 0 ? "#e8f5e8" : "#f5f5f5",
+                        color: size.stock > 0 ? "#2e7d32" : "#757575",
+                      }}
+                    />
+                  ))}
+                  {data.sizes.length > (showSizes ? 5 : 3) && (
+                    <Chip
+                      label={`+${data.sizes.length - (showSizes ? 5 : 3)}`}
+                      size="small"
+                      sx={{
+                        fontSize: isMobile ? "0.7rem" : "0.75rem",
+                        height: isMobile ? 20 : 24,
+                        backgroundColor: "#e3f2fd",
+                        color: "#1976d2",
+                      }}
+                    />
+                  )}
+                </Box>
+              </>
+            ) : (data.sizes && data.sizes.length === 1) ? (
+              // Single size from sizes array
+              <Typography 
+                variant={isMobile ? "caption" : "body2"} 
+                color="text.secondary" 
+                fontWeight={600} 
+                gutterBottom
+                sx={{ textAlign: "center" }}
+              >
+                {data.sizes[0].size}
+              </Typography>
+            ) : data.size ? (
+              // Single size product
+              <Typography 
+                variant={isMobile ? "caption" : "body2"} 
+                color="text.secondary" 
+                fontWeight={600} 
+                gutterBottom
+                sx={{ textAlign: "center" }}
+              >
+                {data.size}
+              </Typography>
+            ) : (
+              // No size information
+              <Typography 
+                variant={isMobile ? "caption" : "body2"} 
+                fontWeight={600} 
+                gutterBottom
+                sx={{ color: "text.secondary", fontStyle: "italic", textAlign: "center", cursor: "pointer" }}
+                onClick={() => handleProductClick(data._id)}
+              >
+                Cliquez pour voir les tailles
+              </Typography>
+            )}
+          </Box>
+        )}
+        
+        {/* Display single size for non-tire products only */}
+        {productCategory !== "pneus" && data.size && (
+          <Typography 
+            variant={isMobile ? "caption" : "body2"} 
+            color="text.secondary" 
+            fontWeight={600} 
+            noWrap 
+            gutterBottom
+            sx={{ textAlign: "center" }}
+          >
+            {data.size}
+          </Typography>
+        )}
         <Typography 
           variant={isMobile ? "h6" : "h5"} 
           color="primary" 

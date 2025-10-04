@@ -101,21 +101,8 @@ const PneusPage = () => {
           }
         `);
         
-        // Debug: Check if promotional products are being fetched correctly
-        const promotionalProducts = data.filter(p => p.isPromotion);
-        console.log('Promotional products found:', promotionalProducts.length);
-        if (promotionalProducts.length > 0) {
-          console.log('First promotional product:', promotionalProducts[0]);
-        }
-        
         // Apply regional pricing to products
         const productsWithRegionalPricing = applyRegionalPricingToProducts(data, userRegion);
-        
-        // Debug: Check if pricing is applied correctly
-        const promotionalWithPricing = productsWithRegionalPricing.filter(p => p.isPromotion);
-        if (promotionalWithPricing.length > 0) {
-          console.log('First promotional product with pricing:', promotionalWithPricing[0]);
-        }
         
         setProducts(productsWithRegionalPricing);
         setFilteredProducts(productsWithRegionalPricing);

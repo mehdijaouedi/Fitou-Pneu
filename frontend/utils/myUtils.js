@@ -55,20 +55,8 @@ const getRegionalPriceForSize = (size, userRegion = 'Nord France') => {
 const applyRegionalPricing = (product, userRegion = 'Nord France') => {
   if (!product) return null;
   
-  // Debug: Log promotional product details
-  if (product.isPromotion) {
-    console.log('Processing promotional product:', product.name);
-    console.log('Promotional prices - Nord:', product.promotionPriceNord, 'Sud:', product.promotionPriceSud);
-    console.log('User region:', userRegion);
-  }
-  
   // Calculate the final price based on promotion status and region
   const finalPrice = getRegionalPrice(product, userRegion);
-  
-  // Debug: Log final calculated price
-  if (product.isPromotion) {
-    console.log('Final calculated price:', finalPrice);
-  }
   
   if (product.sizes && Array.isArray(product.sizes)) {
     // For pneus with sizes
