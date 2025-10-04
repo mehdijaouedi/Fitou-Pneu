@@ -43,6 +43,18 @@ export class SalesController {
       const { saleType, products, grandTotal, clientEmail, utilisateurId, clientId, client } = body;
 
       let finalClientId = clientId;
+      let finalUtilisateurId = utilisateurId;
+
+      // Validate utilisateurId if provided
+      if (utilisateurId) {
+        const existingUser = await this.prisma.utilisateur.findUnique({
+          where: { id: utilisateurId }
+        });
+        if (!existingUser) {
+          console.warn(`Utilisateur with ID ${utilisateurId} not found, setting to null`);
+          finalUtilisateurId = null;
+        }
+      }
 
       // If client data is provided but no clientId, create or find the client
       if (client && !clientId) {
@@ -75,8 +87,8 @@ export class SalesController {
           products,
           grandTotal,
           clientEmail,
-          utilisateurId,
-          clientId: finalClientId,
+          utilisateurId: finalUtilisateurId,
+          clientId: finalClientId || null,
           status: 'pending',
           date: new Date(),
         },

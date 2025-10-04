@@ -193,7 +193,7 @@ const HomePage = () => {
                       }}
                     />
                   )}
-                  <PneuCard data={product} productCategory={category} />
+                  <PneuCard data={product} productCategory={category} showSizes={category === "pneus"} />
                 </Grid>
               ))}
             </Grid>
